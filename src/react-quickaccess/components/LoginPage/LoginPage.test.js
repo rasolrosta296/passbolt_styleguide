@@ -90,6 +90,23 @@ describe("Quickaccess::LoginPage", () => {
     expect(page.switchToSsoFormButton).toBeFalsy();
   });
 
+  it("signs in with a valid Keycloak browser-profile enrollment", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+      enrolled: true,
+    }));
+    const login = jest.fn(() => undefined);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", login);
+    props.context.port.addRequestListener("passbolt.auth.is-mfa-required", () => false);
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+    await page.clickOn(page.keycloakSsoLoginButton);
+
+    expect(login).toHaveBeenCalledTimes(1);
+  });
+
   it(`As AN when I try to sign from the quickaccess via SSO, If I close the SSO login popup, the quickaccess should stay on the SSO form`, async () => {
     expect.assertions(1);
 

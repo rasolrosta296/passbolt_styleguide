@@ -40,6 +40,7 @@ import TagV2SVG from "../../../img/svg/tag_v2.svg";
 import MetadataKeysSettingsEntity from "../../../shared/models/entity/metadata/metadataKeysSettingsEntity";
 import { withMetadataKeysSettingsLocalStorage } from "../../../shared/context/MetadataKeysSettingsLocalStorageContext/MetadataKeysSettingsLocalStorageContext";
 import { sortResourcesByUriMatchingScore } from "../../../shared/utils/sortUtils";
+import SsoSVG from "../../../img/svg/sso.svg";
 
 const SUGGESTED_RESOURCES_LIMIT = 20;
 const BROWSED_RESOURCES_LIMIT = 100;
@@ -268,6 +269,9 @@ class HomePage extends React.Component {
     const showFiltersSection = !hasSearch;
     const canUseTag =
       this.props.context.siteSettings.canIUse("tags") && this.props.rbacContext.canIUseAction(uiActions.TAGS_USE);
+    const canUseKeycloakSso =
+      typeof this.props.context.siteSettings.isPluginEnabled === "function" &&
+      this.props.context.siteSettings.isPluginEnabled("keycloakSso");
     let browsedResources, suggestedResources;
 
     if (isReady) {
@@ -420,6 +424,17 @@ class HomePage extends React.Component {
                       <TagV2SVG />
                       <span className="filter-title">
                         <Trans>Tags</Trans>
+                      </span>
+                      <CaretRightSVG />
+                    </Link>
+                  </li>
+                )}
+                {canUseKeycloakSso && (
+                  <li className="filter-entry keycloak-sso-entry">
+                    <Link to="/webAccessibleResources/quickaccess/keycloak-sso">
+                      <SsoSVG />
+                      <span className="filter-title">
+                        <Trans>Keycloak sign-in</Trans>
                       </span>
                       <CaretRightSVG />
                     </Link>

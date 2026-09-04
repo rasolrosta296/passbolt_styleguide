@@ -22,6 +22,7 @@ class LoginPage extends React.Component {
     this.handleSwitchToPassphrase = this.handleSwitchToPassphrase.bind(this);
     this.handleSwitchToSso = this.handleSwitchToSso.bind(this);
     this.handleSignInWithSso = this.handleSignInWithSso.bind(this);
+    this.handleSignInWithKeycloak = this.handleSignInWithKeycloak.bind(this);
   }
 
   initState() {
@@ -32,6 +33,7 @@ class LoginPage extends React.Component {
       rememberMe: false,
       displaySso: false,
       isSsoAvailable: false,
+      isKeycloakSsoAvailable: false,
       isReady: false,
     };
   }
@@ -42,8 +44,25 @@ class LoginPage extends React.Component {
   async componentDidMount() {
     this.initDefaultRememberMeChoice();
     const ssoLocalConfiguredProvider = await this.props.ssoContext.loadSsoConfiguration();
-    if (ssoLocalConfiguredProvider) {
-      this.setState({ isSsoAvailable: true, displaySso: true, isReady: true });
+    let isKeycloakSsoAvailable = false;
+    if (this.props.context.siteSettings?.isPluginEnabled("keycloakSso")) {
+      try {
+        const status = await this.props.context.port.request("passbolt.keycloak-sso.crypto-enrollment.get-status");
+        if (typeof status?.enrolled !== "boolean") {
+          throw new Error("The extension returned an invalid Keycloak enrollment status.");
+        }
+        isKeycloakSsoAvailable = status.enrolled;
+      } catch (error) {
+        this.setState({ ssoError: error.message });
+      }
+    }
+    if (ssoLocalConfiguredProvider || isKeycloakSsoAvailable) {
+      this.setState({
+        isSsoAvailable: true,
+        isKeycloakSsoAvailable,
+        displaySso: true,
+        isReady: true,
+      });
     } else {
       this.setState({ isReady: true }, () => this.focusOnPassphrase());
     }
@@ -158,6 +177,24 @@ class LoginPage extends React.Component {
     }
   }
 
+  async handleSignInWithKeycloak(event) {
+    event.preventDefault();
+    this.setState({ processing: true, ssoError: "" });
+    const currentWindowBlurState = this.props.context.shouldCloseAtWindowBlur;
+    this.props.context.setWindowBlurBehaviour(false);
+    try {
+      await this.props.context.port.request("passbolt.keycloak-sso.crypto-login");
+      await this.handleLoginSuccess();
+    } catch (error) {
+      if (error.name !== "UserAbortsOperationError") {
+        this.setState({ ssoError: error.message });
+      }
+    } finally {
+      this.setState({ processing: false });
+      this.props.context.setWindowBlurBehaviour(currentWindowBlurState);
+    }
+  }
+
   /**
    * Returns true if SSO is enabled and configured for Azure.
    * @return {bool}
@@ -266,6 +303,17 @@ class LoginPage extends React.Component {
                   >
                     <span className="provider-logo">{ssoProviderData.icon}</span>
                     {this.props.t(`Sign in with {{providerName}}`, { providerName: ssoProviderData.name })}
+                  </button>
+                )}
+                {this.state.isKeycloakSsoAvailable && (
+                  <button
+                    type="button"
+                    className={`sso-login-button keycloak ${this.state.processing ? "disabled" : ""}`}
+                    onClick={this.handleSignInWithKeycloak}
+                    disabled={this.state.processing}
+                  >
+                    <Trans>Sign in with Keycloak</Trans>
+                    {this.state.processing && <SpinnerSVG />}
                   </button>
                 )}
                 <button

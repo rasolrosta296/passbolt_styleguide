@@ -79,6 +79,10 @@ export default class LoginPageTest {
     return this.select(".sso-login-form .sso-login-button");
   }
 
+  get keycloakSsoLoginButton() {
+    return this.select(".sso-login-form .sso-login-button.keycloak");
+  }
+
   /**
    * Returns the HTMLElement of the passphrase input
    * @returns {HTMLElement}

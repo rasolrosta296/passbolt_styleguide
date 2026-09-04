@@ -43,6 +43,7 @@ import MetadataKeysSettingsLocalStorageContextProvider from "../shared/context/M
 import ActionAbortedMissingMetadataKeysPage from "./components/ActionAbortedMissingMetadataKeysPage/ActionAbortedMissingMetadataKeysPage";
 import RbacServiceWorkerService from "../shared/services/serviceWorker/rbac/rbacServiceWorkerService";
 import OnlineSessionEntity from "../shared/models/entity/session/onlineSessionEntity";
+import KeycloakSsoPage from "./components/KeycloakSsoPage/KeycloakSsoPage";
 
 const SEARCH_VISIBLE_ROUTES = [
   "/webAccessibleResources/quickaccess/home",
@@ -580,6 +581,11 @@ class ExtQuickAccess extends React.Component {
                                           exact
                                           path="/webAccessibleResources/quickaccess/home"
                                           component={HomePage}
+                                        />
+                                        <PrivateRoute
+                                          exact
+                                          path="/webAccessibleResources/quickaccess/keycloak-sso"
+                                          component={KeycloakSsoPage}
                                         />
                                       </AnimatedSwitch>
                                     </PasswordExpirySettingsContextProvider>
