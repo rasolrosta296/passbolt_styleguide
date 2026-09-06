@@ -74,4 +74,20 @@ describe("Quickaccess::KeycloakSsoPage", () => {
     expect(await screen.findByText("Keycloak sign-in is not enabled for this Passbolt server.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeNull();
   });
+
+  it("does not render sensitive background error details", async () => {
+    const props = propsWithStatus(false);
+    const user = userEvent.setup();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", () => {
+      throw new Error("authorization_code=secret-code&state=secret-state");
+    });
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Keycloak authentication could not be completed. Try again to start a fresh enrollment.",
+    );
+    expect(screen.queryByText(/secret-code|secret-state/)).toBeNull();
+  });
 });

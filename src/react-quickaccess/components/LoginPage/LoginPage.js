@@ -52,8 +52,10 @@ class LoginPage extends React.Component {
           throw new Error("The extension returned an invalid Keycloak enrollment status.");
         }
         isKeycloakSsoAvailable = status.enrolled;
-      } catch (error) {
-        this.setState({ ssoError: error.message });
+      } catch {
+        this.setState({
+          ssoError: this.props.t("Keycloak sign-in is unavailable. Sign in with your Passbolt passphrase."),
+        });
       }
     }
     if (ssoLocalConfiguredProvider || isKeycloakSsoAvailable) {
@@ -187,7 +189,11 @@ class LoginPage extends React.Component {
       await this.handleLoginSuccess();
     } catch (error) {
       if (error.name !== "UserAbortsOperationError") {
-        this.setState({ ssoError: error.message });
+        this.setState({
+          ssoError: this.props.t(
+            "Keycloak sign-in did not complete Passbolt cryptographic authentication. Sign in with your passphrase or try again.",
+          ),
+        });
       }
     } finally {
       this.setState({ processing: false });
@@ -324,7 +330,7 @@ class LoginPage extends React.Component {
                   <Trans>Sign in with my passphrase.</Trans>
                 </button>
                 {this.state.ssoError && (
-                  <div className="error-message">
+                  <div className="error-message" role="alert">
                     <Trans>An error occured during the sign-in via SSO.</Trans>
                     <br />
                     {this.state.ssoError}

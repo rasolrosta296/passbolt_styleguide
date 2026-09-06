@@ -37,8 +37,11 @@ class KeycloakSsoPage extends React.Component {
         throw new Error("The extension returned an invalid Keycloak enrollment status.");
       }
       this.setState({ loading: false, enrolled: result.enrolled });
-    } catch (error) {
-      this.setState({ loading: false, error: error.message });
+    } catch {
+      this.setState({
+        loading: false,
+        error: this.props.t("Keycloak sign-in is unavailable. Normal Passbolt sign-in remains available."),
+      });
     }
   }
 
@@ -55,7 +58,9 @@ class KeycloakSsoPage extends React.Component {
       this.setState({ enrollmentMetadata });
     } catch (error) {
       if (error?.name !== "UserAbortsOperationError") {
-        this.setState({ error: error.message });
+        this.setState({
+          error: this.props.t("Keycloak authentication could not be completed. Try again to start a fresh enrollment."),
+        });
       }
     } finally {
       this.props.context.setWindowBlurBehaviour(closeAtBlur);
@@ -83,8 +88,13 @@ class KeycloakSsoPage extends React.Component {
         enrollmentMetadata: null,
         message: this.props.t("This browser profile is enrolled for Keycloak sign-in."),
       });
-    } catch (error) {
-      this.setState({ error: error.message, enrollmentMetadata: null });
+    } catch {
+      this.setState({
+        error: this.props.t(
+          "Browser-profile enrollment failed. Check your Passbolt passphrase and restart Keycloak authentication.",
+        ),
+        enrollmentMetadata: null,
+      });
     } finally {
       passphrase = null;
       this.setState({ processing: false, passphrase: "" });
@@ -110,8 +120,12 @@ class KeycloakSsoPage extends React.Component {
         passphrase: "",
         message: this.props.t("Keycloak was unlinked. Normal Passbolt sign-in remains available."),
       });
-    } catch (error) {
-      this.setState({ error: error.message });
+    } catch {
+      this.setState({
+        error: this.props.t(
+          "Keycloak unlink failed. The enrollment remains active; try again before removing local data.",
+        ),
+      });
     } finally {
       this.setState({ processing: false });
     }
@@ -133,7 +147,7 @@ class KeycloakSsoPage extends React.Component {
           </div>
         )}
         {!this.state.loading && !this.isEnabled && (
-          <div className="error-message">
+          <div className="error-message" role="alert">
             <Trans>Keycloak sign-in is not enabled for this Passbolt server.</Trans>
           </div>
         )}
@@ -240,8 +254,16 @@ class KeycloakSsoPage extends React.Component {
             </div>
           </form>
         )}
-        {this.state.message && <div className="success-message">{this.state.message}</div>}
-        {this.state.error && <div className="error-message">{this.state.error}</div>}
+        {this.state.message && (
+          <div className="success-message" role="status" aria-live="polite">
+            {this.state.message}
+          </div>
+        )}
+        {this.state.error && (
+          <div className="error-message" role="alert">
+            {this.state.error}
+          </div>
+        )}
       </div>
     );
   }

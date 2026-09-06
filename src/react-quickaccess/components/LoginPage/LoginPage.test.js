@@ -107,6 +107,27 @@ describe("Quickaccess::LoginPage", () => {
     expect(login).toHaveBeenCalledTimes(1);
   });
 
+  it("does not render sensitive Keycloak login error details", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+      enrolled: true,
+    }));
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", () => {
+      throw new Error("id_token=secret-token&release_capability=secret-capability");
+    });
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+    await page.clickOn(page.keycloakSsoLoginButton);
+
+    expect(page.ssoErrorMessage.textContent).toBe(
+      "An error occured during the sign-in via SSO.Keycloak sign-in did not complete Passbolt cryptographic authentication. Sign in with your passphrase or try again.",
+    );
+    expect(page.ssoErrorMessage.textContent).not.toContain("secret-token");
+    expect(page.ssoErrorMessage.textContent).not.toContain("secret-capability");
+  });
+
   it(`As AN when I try to sign from the quickaccess via SSO, If I close the SSO login popup, the quickaccess should stay on the SSO form`, async () => {
     expect.assertions(1);
 
