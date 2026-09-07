@@ -26,6 +26,13 @@ function renderPage(props) {
 }
 
 describe("Quickaccess::KeycloakSsoPage", () => {
+  it("shows the authenticated Keycloak SSO management title", async () => {
+    renderPage(propsWithStatus(true));
+
+    expect(await screen.findByText("Keycloak SSO")).toBeTruthy();
+    expect(screen.queryByText("Keycloak sign-in")).toBeNull();
+  });
+
   it("hands native popup enrollment off without starting its OIDC transaction", async () => {
     const props = propsWithStatus(false, false);
     const user = userEvent.setup();

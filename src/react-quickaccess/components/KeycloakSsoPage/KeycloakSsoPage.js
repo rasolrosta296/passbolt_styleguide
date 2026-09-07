@@ -155,7 +155,7 @@ class KeycloakSsoPage extends React.Component {
         <div className="back-link">
           <Link className="primary-action" to="/webAccessibleResources/quickaccess/home">
             <span className="primary-action-title">
-              <Trans>Keycloak sign-in</Trans>
+              <Trans>Keycloak SSO</Trans>
             </span>
           </Link>
         </div>

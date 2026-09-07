@@ -99,6 +99,18 @@ describe("HomePage", () => {
       expect(page.browseListTitle).toStrictEqual("Browse");
       expect(page.hasTagFilterEntry).toBeFalsy();
     });
+
+    it("shows Keycloak SSO as authenticated management navigation", () => {
+      const context = defaultAppContext();
+      context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+      const page = new HomePagePage(defaultProps({ context }));
+      const keycloakSsoEntry = [...page.browserEntries].find((entry) => entry.classList.contains("keycloak-sso-entry"));
+
+      expect(keycloakSsoEntry.querySelector(".filter-title").textContent).toBe("Keycloak SSO");
+      expect(keycloakSsoEntry.querySelector("a").getAttribute("href")).toBe(
+        "/webAccessibleResources/quickaccess/keycloak-sso",
+      );
+    });
   });
 
   describe("As LU I can see filtered resources on the quickaccess homepage", () => {

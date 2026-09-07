@@ -434,7 +434,7 @@ class HomePage extends React.Component {
                     <Link to="/webAccessibleResources/quickaccess/keycloak-sso">
                       <SsoSVG />
                       <span className="filter-title">
-                        <Trans>Keycloak sign-in</Trans>
+                        <Trans>Keycloak SSO</Trans>
                       </span>
                       <CaretRightSVG />
                     </Link>

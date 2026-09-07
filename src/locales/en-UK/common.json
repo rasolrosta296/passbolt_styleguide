@@ -817,6 +817,7 @@
   "Key Size": "Key Size",
   "Keycloak authentication could not be completed. Try again to start a fresh enrollment.": "Keycloak authentication could not be completed. Try again to start a fresh enrollment.",
   "Keycloak authentication succeeded. Enter your Passbolt passphrase to enroll this browser profile.": "Keycloak authentication succeeded. Enter your Passbolt passphrase to enroll this browser profile.",
+  "Keycloak SSO": "Keycloak SSO",
   "Keycloak sign-in": "Keycloak sign-in",
   "Keycloak sign-in did not complete Passbolt cryptographic authentication. Sign in with your passphrase or try again.": "Keycloak sign-in did not complete Passbolt cryptographic authentication. Sign in with your passphrase or try again.",
   "Keycloak sign-in is not enabled for this Passbolt server.": "Keycloak sign-in is not enabled for this Passbolt server.",
