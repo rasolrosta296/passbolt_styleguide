@@ -182,6 +182,25 @@ class LoginPage extends React.Component {
   async handleSignInWithKeycloak(event) {
     event.preventDefault();
     this.setState({ processing: true, ssoError: "" });
+
+    if (this.props.context.getDetached() !== true) {
+      try {
+        await this.props.context.port.request("passbolt.keycloak-sso.crypto-login.open-detached");
+        await this.props.context.closeWindow();
+      } catch (error) {
+        if (error.name !== "UserAbortsOperationError") {
+          this.setState({
+            ssoError: this.props.t(
+              "Keycloak sign-in did not complete Passbolt cryptographic authentication. Sign in with your passphrase or try again.",
+            ),
+          });
+        }
+      } finally {
+        this.setState({ processing: false });
+      }
+      return;
+    }
+
     const currentWindowBlurState = this.props.context.shouldCloseAtWindowBlur;
     this.props.context.setWindowBlurBehaviour(false);
     try {

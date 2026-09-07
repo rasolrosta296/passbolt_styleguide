@@ -62,6 +62,7 @@ export const BOOTSTRAP_FEATURE = {
   SAVE_CREDENTIALS: "save-credentials",
   AUTOSAVE_CREDENTIALS: "autosave-credentials",
   REQUEST_PASSPHRASE: "request-passphrase",
+  KEYCLOAK_SSO: "keycloak-sso",
 };
 
 class ExtQuickAccess extends React.Component {
@@ -415,6 +416,8 @@ class ExtQuickAccess extends React.Component {
         return "/webAccessibleResources/quickaccess/resources/create";
       case BOOTSTRAP_FEATURE.AUTOSAVE_CREDENTIALS:
         return "/webAccessibleResources/quickaccess/resources/autosave";
+      case BOOTSTRAP_FEATURE.KEYCLOAK_SSO:
+        return "/webAccessibleResources/quickaccess/keycloak-sso";
     }
 
     return "/webAccessibleResources/quickaccess/home";

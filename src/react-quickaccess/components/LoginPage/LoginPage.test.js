@@ -17,6 +17,7 @@
  */
 import LoginPageTest from "./LoginPage.test.page";
 import { defaultPropsWithSsoDisabled, defaultPropsWithSsoEnabled } from "./LoginPage.test.data";
+import { waitFor } from "@testing-library/react";
 
 beforeEach(() => {
   jest.resetModules();
@@ -90,26 +91,94 @@ describe("Quickaccess::LoginPage", () => {
     expect(page.switchToSsoFormButton).toBeFalsy();
   });
 
-  it("signs in with a valid Keycloak browser-profile enrollment", async () => {
+  it("hands native popup Keycloak login off without starting its cryptographic login transaction", async () => {
     const props = defaultPropsWithSsoDisabled();
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.getDetached = jest.fn(() => false);
+    props.context.setWindowBlurBehaviour = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+      enrolled: true,
+    }));
+    const openDetached = jest.fn();
+    const login = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.open-detached", openDetached);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", login);
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+    await page.clickOn(page.keycloakSsoLoginButton);
+
+    expect(openDetached).toHaveBeenCalledTimes(1);
+    expect(login).not.toHaveBeenCalled();
+    expect(props.context.setWindowBlurBehaviour).not.toHaveBeenCalled();
+    expect(props.context.closeWindow).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not automatically start Keycloak cryptographic login when the detached login page mounts", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.getDetached = jest.fn(() => true);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+      enrolled: true,
+    }));
+    const login = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", login);
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+
+    expect(page.keycloakSsoLoginButton).toBeTruthy();
+    expect(login).not.toHaveBeenCalled();
+  });
+
+  it("cannot leave cryptographic login owned by a native popup that disconnects after handoff", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.getDetached = jest.fn(() => false);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+      enrolled: true,
+    }));
+    const login = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", login);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.open-detached", () => {
+      props.context.port.requestListeners = {};
+    });
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+    await page.clickOn(page.keycloakSsoLoginButton);
+
+    expect(props.context.closeWindow).toHaveBeenCalledTimes(1);
+    expect(login).not.toHaveBeenCalled();
+  });
+
+  it("signs in with a valid Keycloak browser-profile enrollment from detached Quick Access", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.getDetached = jest.fn(() => true);
+    props.context.setWindowBlurBehaviour = jest.fn();
     props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
       enrolled: true,
     }));
     const login = jest.fn(() => undefined);
     props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", login);
     props.context.port.addRequestListener("passbolt.auth.is-mfa-required", () => false);
+    props.loginSuccessCallback = jest.fn();
     const page = new LoginPageTest(props);
 
     await page.isReady();
     await page.clickOn(page.keycloakSsoLoginButton);
 
+    await waitFor(() => expect(props.loginSuccessCallback).toHaveBeenCalledTimes(1));
     expect(login).toHaveBeenCalledTimes(1);
+    expect(props.context.setWindowBlurBehaviour.mock.calls).toEqual([[false], [true]]);
   });
 
   it("does not render sensitive Keycloak login error details", async () => {
     const props = defaultPropsWithSsoDisabled();
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.getDetached = jest.fn(() => true);
+    props.context.setWindowBlurBehaviour = jest.fn();
     props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
       enrolled: true,
     }));
@@ -126,6 +195,31 @@ describe("Quickaccess::LoginPage", () => {
     );
     expect(page.ssoErrorMessage.textContent).not.toContain("secret-token");
     expect(page.ssoErrorMessage.textContent).not.toContain("secret-capability");
+    expect(props.context.setWindowBlurBehaviour.mock.calls).toEqual([[false], [true]]);
+  });
+
+  it("keeps normal passphrase login unchanged when Keycloak login is available", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+      enrolled: true,
+    }));
+    const login = jest.fn(() => {
+      throw new Error("Stop after normal login request.");
+    });
+    const openDetached = jest.fn();
+    props.context.port.addRequestListener("passbolt.auth.login", login);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.open-detached", openDetached);
+    props.context.port.addRequestListener("passbolt.remember-me.get-user-latest-choice", () => false);
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+    await page.clickOnSwitchToPassphraseForm();
+    await page.user.type(page.passphraseInput, "dummy-passphrase");
+    await page.clickOn(page.select("button[type='submit']"));
+
+    expect(login.mock.calls[0].slice(0, 2)).toEqual(["dummy-passphrase", false]);
+    expect(openDetached).not.toHaveBeenCalled();
   });
 
   it(`As AN when I try to sign from the quickaccess via SSO, If I close the SSO login popup, the quickaccess should stay on the SSO form`, async () => {

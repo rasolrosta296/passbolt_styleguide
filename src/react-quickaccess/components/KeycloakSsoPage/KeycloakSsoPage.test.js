@@ -6,10 +6,12 @@ import MockTranslationProvider from "../../../react-extension/test/mock/componen
 import { defaultAppContext } from "../../contexts/AppContext.test.data";
 import KeycloakSsoPage from "./KeycloakSsoPage";
 
-function propsWithStatus(enrolled) {
+function propsWithStatus(enrolled, detached = true) {
   const context = defaultAppContext();
   context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
   context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({ enrolled }));
+  context.getDetached = jest.fn(() => detached);
+  context.setWindowBlurBehaviour = jest.fn();
   return { context };
 }
 
@@ -24,6 +26,85 @@ function renderPage(props) {
 }
 
 describe("Quickaccess::KeycloakSsoPage", () => {
+  it("hands native popup enrollment off without starting its OIDC transaction", async () => {
+    const props = propsWithStatus(false, false);
+    const user = userEvent.setup();
+    const openDetached = jest.fn();
+    const startEnrollment = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.open-detached", openDetached);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", startEnrollment);
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" }));
+
+    await waitFor(() => expect(openDetached).toHaveBeenCalledTimes(1));
+    expect(startEnrollment).not.toHaveBeenCalled();
+    expect(props.context.setWindowBlurBehaviour).not.toHaveBeenCalled();
+    expect(props.context.closeWindow).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not start enrollment automatically when the detached page mounts", async () => {
+    const props = propsWithStatus(false, true);
+    const startEnrollment = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", startEnrollment);
+
+    renderPage(props);
+
+    expect(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeTruthy();
+    expect(startEnrollment).not.toHaveBeenCalled();
+  });
+
+  it("starts enrollment only in detached Quick Access and restores blur-close behavior", async () => {
+    const props = propsWithStatus(false, true);
+    const user = userEvent.setup();
+    const metadata = { enrollment_id: "10000000-0000-4000-8000-000000000001" };
+    const startEnrollment = jest.fn(() => metadata);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", startEnrollment);
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" }));
+
+    await screen.findByLabelText("Passphrase");
+    expect(startEnrollment).toHaveBeenCalledTimes(1);
+    expect(props.context.setWindowBlurBehaviour.mock.calls).toEqual([[false], [true]]);
+    expect(props.context.closeWindow).not.toHaveBeenCalled();
+  });
+
+  it("cannot leave enrollment owned by a native popup that disconnects after handoff", async () => {
+    const props = propsWithStatus(false, false);
+    const user = userEvent.setup();
+    const startEnrollment = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", startEnrollment);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.open-detached", () => {
+      props.context.port.requestListeners = {};
+    });
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" }));
+
+    await waitFor(() => expect(props.context.closeWindow).toHaveBeenCalledTimes(1));
+    expect(startEnrollment).not.toHaveBeenCalled();
+  });
+
+  it("keeps the native popup open and does not start enrollment when detached handoff fails", async () => {
+    const props = propsWithStatus(false, false);
+    const user = userEvent.setup();
+    const startEnrollment = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", startEnrollment);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.open-detached", () => {
+      throw new Error("Window creation failed");
+    });
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Keycloak authentication could not be completed. Try again to start a fresh enrollment.",
+    );
+    expect(startEnrollment).not.toHaveBeenCalled();
+    expect(props.context.closeWindow).not.toHaveBeenCalled();
+  });
+
   it("collects the passphrase only after fresh Keycloak authentication", async () => {
     const props = propsWithStatus(false);
     const user = userEvent.setup();

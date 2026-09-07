@@ -51,6 +51,24 @@ class KeycloakSsoPage extends React.Component {
 
   async handleStartEnrollment() {
     this.setState({ processing: true, message: "", error: "" });
+    if (this.props.context.getDetached() !== true) {
+      try {
+        await this.props.context.port.request("passbolt.keycloak-sso.crypto-enroll.open-detached");
+        await this.props.context.closeWindow();
+      } catch (error) {
+        if (error?.name !== "UserAbortsOperationError") {
+          this.setState({
+            error: this.props.t(
+              "Keycloak authentication could not be completed. Try again to start a fresh enrollment.",
+            ),
+          });
+        }
+      } finally {
+        this.setState({ processing: false });
+      }
+      return;
+    }
+
     const closeAtBlur = this.props.context.shouldCloseAtWindowBlur;
     this.props.context.setWindowBlurBehaviour(false);
     try {
