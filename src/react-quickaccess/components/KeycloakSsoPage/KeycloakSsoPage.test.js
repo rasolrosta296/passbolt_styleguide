@@ -6,10 +6,10 @@ import MockTranslationProvider from "../../../react-extension/test/mock/componen
 import { defaultAppContext } from "../../contexts/AppContext.test.data";
 import KeycloakSsoPage from "./KeycloakSsoPage";
 
-function propsWithStatus(enrolled, detached = true) {
+function propsWithStatus(enrolled, detached = true, linked = true) {
   const context = defaultAppContext();
   context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
-  context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({ enrolled }));
+  context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({ linked, enrolled }));
   context.getDetached = jest.fn(() => detached);
   context.setWindowBlurBehaviour = jest.fn();
   return { context };
@@ -31,6 +31,84 @@ describe("Quickaccess::KeycloakSsoPage", () => {
 
     expect(await screen.findByText("Keycloak SSO")).toBeTruthy();
     expect(screen.queryByText("Keycloak sign-in")).toBeNull();
+  });
+
+  it("requires identity linking before browser-profile enrollment", async () => {
+    const props = propsWithStatus(false, true, false);
+    const startLink = jest.fn();
+    const startEnrollment = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.identity.link", startLink);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enroll.start", startEnrollment);
+
+    renderPage(props);
+
+    expect(await screen.findByText("Your Keycloak identity is not linked.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Link Keycloak identity" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Unlink Keycloak" })).toBeNull();
+    expect(startLink).not.toHaveBeenCalled();
+    expect(startEnrollment).not.toHaveBeenCalled();
+  });
+
+  it("allows a linked identity to be unlinked before browser-profile enrollment", async () => {
+    renderPage(propsWithStatus(false, true, true));
+
+    expect(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Unlink Keycloak" })).toBeTruthy();
+  });
+
+  it("hands native popup identity linking off without starting the link flow", async () => {
+    const props = propsWithStatus(false, false, false);
+    const user = userEvent.setup();
+    const openDetached = jest.fn();
+    const startLink = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.identity.link.open-detached", openDetached);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.identity.link", startLink);
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Link Keycloak identity" }));
+
+    await waitFor(() => expect(openDetached).toHaveBeenCalledTimes(1));
+    expect(startLink).not.toHaveBeenCalled();
+    expect(props.context.closeWindow).toHaveBeenCalledTimes(1);
+  });
+
+  it("links only after an explicit click in detached Quick Access", async () => {
+    const props = propsWithStatus(false, true, false);
+    const user = userEvent.setup();
+    const startLink = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.identity.link", startLink);
+
+    renderPage(props);
+    expect(await screen.findByRole("button", { name: "Link Keycloak identity" })).toBeTruthy();
+    expect(startLink).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Link Keycloak identity" }));
+
+    await waitFor(() => expect(startLink).toHaveBeenCalledTimes(1));
+    expect(await screen.findByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeTruthy();
+    expect(screen.getByText("Your Keycloak identity is linked. You can now enroll this browser profile.")).toBeTruthy();
+    expect(props.context.setWindowBlurBehaviour.mock.calls).toEqual([[false], [true]]);
+  });
+
+  it("recovers the authoritative linked state after a duplicate-link collision", async () => {
+    const props = propsWithStatus(false, true, false);
+    const user = userEvent.setup();
+    let statusRequests = 0;
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => {
+      statusRequests += 1;
+      return statusRequests === 1 ? { linked: false, enrolled: false } : { linked: true, enrolled: true };
+    });
+    props.context.port.addRequestListener("passbolt.keycloak-sso.identity.link", () => {
+      throw new Error("Identity collision");
+    });
+
+    renderPage(props);
+    await user.click(await screen.findByRole("button", { name: "Link Keycloak identity" }));
+
+    expect(await screen.findByText("Your Keycloak identity is already linked to this Passbolt account.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Unlink Keycloak" })).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(statusRequests).toBe(2);
   });
 
   it("hands native popup enrollment off without starting its OIDC transaction", async () => {
@@ -161,6 +239,22 @@ describe("Quickaccess::KeycloakSsoPage", () => {
 
     expect(await screen.findByText("Keycloak sign-in is not enabled for this Passbolt server.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeNull();
+  });
+
+  it("fails closed without rendering link controls when authoritative status is unavailable", async () => {
+    const props = propsWithStatus(false);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => {
+      throw new Error("Status unavailable");
+    });
+
+    renderPage(props);
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Keycloak sign-in is unavailable. Normal Passbolt sign-in remains available.",
+    );
+    expect(screen.queryByRole("button", { name: "Link Keycloak identity" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Authenticate with Keycloak to enroll" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Unlink Keycloak" })).toBeNull();
   });
 
   it("does not render sensitive background error details", async () => {

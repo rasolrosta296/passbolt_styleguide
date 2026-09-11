@@ -11,7 +11,9 @@ class KeycloakSsoPage extends React.Component {
     super(props);
     this.state = {
       loading: true,
+      statusAvailable: false,
       processing: false,
+      linked: false,
       enrolled: false,
       enrollmentMetadata: null,
       passphrase: "",
@@ -19,6 +21,7 @@ class KeycloakSsoPage extends React.Component {
       message: "",
       error: "",
     };
+    this.handleStartLink = this.handleStartLink.bind(this);
     this.handleStartEnrollment = this.handleStartEnrollment.bind(this);
     this.handleCompleteEnrollment = this.handleCompleteEnrollment.bind(this);
     this.handlePassphraseChange = this.handlePassphraseChange.bind(this);
@@ -32,11 +35,13 @@ class KeycloakSsoPage extends React.Component {
       return;
     }
     try {
-      const result = await this.props.context.port.request("passbolt.keycloak-sso.crypto-enrollment.get-status");
-      if (typeof result?.enrolled !== "boolean") {
-        throw new Error("The extension returned an invalid Keycloak enrollment status.");
-      }
-      this.setState({ loading: false, enrolled: result.enrolled });
+      const result = await this.getManagementStatus();
+      this.setState({
+        loading: false,
+        statusAvailable: true,
+        linked: result.linked,
+        enrolled: result.linked && result.enrolled,
+      });
     } catch {
       this.setState({
         loading: false,
@@ -49,7 +54,66 @@ class KeycloakSsoPage extends React.Component {
     return this.props.context.siteSettings?.isPluginEnabled("keycloakSso") === true;
   }
 
+  async getManagementStatus() {
+    const result = await this.props.context.port.request("passbolt.keycloak-sso.crypto-enrollment.get-status");
+    if (typeof result?.linked !== "boolean" || typeof result?.enrolled !== "boolean") {
+      throw new Error("The extension returned an invalid Keycloak enrollment status.");
+    }
+    return result;
+  }
+
+  async handleStartLink() {
+    this.setState({ processing: true, message: "", error: "" });
+    if (this.props.context.getDetached() !== true) {
+      try {
+        await this.props.context.port.request("passbolt.keycloak-sso.identity.link.open-detached");
+        await this.props.context.closeWindow();
+      } catch (error) {
+        if (error?.name !== "UserAbortsOperationError") {
+          this.setState({ error: this.props.t("Keycloak identity linking could not be completed. Try again.") });
+        }
+      } finally {
+        this.setState({ processing: false });
+      }
+      return;
+    }
+
+    const closeAtBlur = this.props.context.shouldCloseAtWindowBlur;
+    this.props.context.setWindowBlurBehaviour(false);
+    try {
+      await this.props.context.port.request("passbolt.keycloak-sso.identity.link");
+      this.setState({
+        linked: true,
+        message: this.props.t("Your Keycloak identity is linked. You can now enroll this browser profile."),
+      });
+    } catch (error) {
+      if (error?.name !== "UserAbortsOperationError") {
+        try {
+          const status = await this.getManagementStatus();
+          if (status.linked) {
+            this.setState({
+              linked: true,
+              enrolled: status.enrolled,
+              message: this.props.t("Your Keycloak identity is already linked to this Passbolt account."),
+            });
+          } else {
+            this.setState({ error: this.props.t("Keycloak identity linking could not be completed. Try again.") });
+          }
+        } catch {
+          this.setState({ error: this.props.t("Keycloak identity linking could not be completed. Try again.") });
+        }
+      }
+    } finally {
+      this.props.context.setWindowBlurBehaviour(closeAtBlur);
+      this.setState({ processing: false });
+    }
+  }
+
   async handleStartEnrollment() {
+    if (!this.state.linked) {
+      this.setState({ error: this.props.t("Link your Keycloak identity before enrolling this browser profile.") });
+      return;
+    }
     this.setState({ processing: true, message: "", error: "" });
     if (this.props.context.getDetached() !== true) {
       try {
@@ -132,6 +196,7 @@ class KeycloakSsoPage extends React.Component {
     try {
       await this.props.context.port.request("passbolt.keycloak-sso.identity.unlink");
       this.setState({
+        linked: false,
         enrolled: false,
         confirmUnlink: false,
         enrollmentMetadata: null,
@@ -169,16 +234,29 @@ class KeycloakSsoPage extends React.Component {
             <Trans>Keycloak sign-in is not enabled for this Passbolt server.</Trans>
           </div>
         )}
-        {!this.state.loading && this.isEnabled && !this.state.enrollmentMetadata && (
-          <div className="form-container">
+        {!this.state.loading && this.state.statusAvailable && this.isEnabled && !this.state.enrollmentMetadata && (
+          <div className="form-container keycloak-sso-management">
             <p>
-              {this.state.enrolled ? (
+              {!this.state.linked ? (
+                <Trans>Your Keycloak identity is not linked.</Trans>
+              ) : this.state.enrolled ? (
                 <Trans>This browser profile is enrolled for Keycloak sign-in.</Trans>
               ) : (
                 <Trans>This browser profile is not enrolled for Keycloak sign-in.</Trans>
               )}
             </p>
-            {!this.state.enrolled && (
+            {!this.state.linked && (
+              <button
+                type="button"
+                className={`button primary big full-width ${this.state.processing ? "processing" : ""}`}
+                disabled={this.state.processing}
+                onClick={this.handleStartLink}
+              >
+                <Trans>Link Keycloak identity</Trans>
+                {this.state.processing && <SpinnerSVG />}
+              </button>
+            )}
+            {this.state.linked && !this.state.enrolled && (
               <button
                 type="button"
                 className={`button primary big full-width ${this.state.processing ? "processing" : ""}`}
@@ -189,7 +267,7 @@ class KeycloakSsoPage extends React.Component {
                 {this.state.processing && <SpinnerSVG />}
               </button>
             )}
-            {this.state.enrolled && !this.state.confirmUnlink && (
+            {this.state.linked && !this.state.confirmUnlink && (
               <button
                 type="button"
                 className="button warning big full-width"
@@ -199,7 +277,7 @@ class KeycloakSsoPage extends React.Component {
                 <Trans>Unlink Keycloak</Trans>
               </button>
             )}
-            {this.state.enrolled && this.state.confirmUnlink && (
+            {this.state.linked && this.state.confirmUnlink && (
               <div className="keycloak-unlink-confirmation">
                 <p>
                   <Trans>

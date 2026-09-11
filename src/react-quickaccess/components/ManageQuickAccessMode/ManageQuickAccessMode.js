@@ -16,7 +16,7 @@ import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
 import { withAppContext } from "../../../shared/context/AppContext/AppContext";
 
-class ManageQuickAccessMode extends Component {
+export class ManageQuickAccessMode extends Component {
   /**
    * Whenever the component is mounted
    */
@@ -25,19 +25,16 @@ class ManageQuickAccessMode extends Component {
     this.handleResizeWindow();
   }
 
-  /**
-   * Get the query parameters from the url
-   * @returns {URLSearchParams}
-   */
-  get queryParameters() {
-    return new URLSearchParams(this.props.location.search);
+  get isTabSurface() {
+    return new URLSearchParams(window.location.search).get("surface") === "tab";
   }
 
   /**
    * Handle close outside window event
    */
   handleCloseOutsideWindowEvent() {
-    const mustCloseWindow = this.props.context.getDetached() && this.props.context.getBootstrapFeature() !== null;
+    const mustCloseWindow =
+      this.props.context.getDetached() && this.props.context.getBootstrapFeature() !== null && !this.isTabSurface;
     if (mustCloseWindow) {
       const closeWindow = async () => {
         if (this.props.context.shouldCloseAtWindowBlur) {
@@ -55,7 +52,7 @@ class ManageQuickAccessMode extends Component {
    */
   handleResizeWindow() {
     const detachedMode = this.props.context.getDetached();
-    if (detachedMode) {
+    if (detachedMode && !this.isTabSurface) {
       const handleWindowResized = (entries) =>
         this.props.context.port.emit("passbolt.quickaccess.update-window-height", entries[0].target.clientHeight);
       const resizeObserver = new ResizeObserver(handleWindowResized);
