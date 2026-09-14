@@ -91,12 +91,28 @@ describe("Quickaccess::LoginPage", () => {
     expect(page.switchToSsoFormButton).toBeFalsy();
   });
 
+  it("uses local browser-profile enrollment status for logged-out Keycloak login", async () => {
+    const props = defaultPropsWithSsoDisabled();
+    props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
+    const loginStatus = jest.fn(() => ({ enrolled: true }));
+    const managementStatus = jest.fn(() => ({ linked: true, enrolled: true }));
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", loginStatus);
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", managementStatus);
+    const page = new LoginPageTest(props);
+
+    await page.isReady();
+
+    expect(page.keycloakSsoLoginButton).toBeTruthy();
+    expect(loginStatus).toHaveBeenCalledTimes(1);
+    expect(managementStatus).not.toHaveBeenCalled();
+  });
+
   it("hands native popup Keycloak login off without starting its cryptographic login transaction", async () => {
     const props = defaultPropsWithSsoDisabled();
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
     props.context.getDetached = jest.fn(() => false);
     props.context.setWindowBlurBehaviour = jest.fn();
-    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", () => ({
       enrolled: true,
     }));
     const openDetached = jest.fn();
@@ -118,7 +134,7 @@ describe("Quickaccess::LoginPage", () => {
     const props = defaultPropsWithSsoDisabled();
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
     props.context.getDetached = jest.fn(() => true);
-    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", () => ({
       enrolled: true,
     }));
     const login = jest.fn();
@@ -135,7 +151,7 @@ describe("Quickaccess::LoginPage", () => {
     const props = defaultPropsWithSsoDisabled();
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
     props.context.getDetached = jest.fn(() => false);
-    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", () => ({
       enrolled: true,
     }));
     const login = jest.fn();
@@ -157,7 +173,7 @@ describe("Quickaccess::LoginPage", () => {
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
     props.context.getDetached = jest.fn(() => true);
     props.context.setWindowBlurBehaviour = jest.fn();
-    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", () => ({
       enrolled: true,
     }));
     const login = jest.fn(() => undefined);
@@ -179,7 +195,7 @@ describe("Quickaccess::LoginPage", () => {
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
     props.context.getDetached = jest.fn(() => true);
     props.context.setWindowBlurBehaviour = jest.fn();
-    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", () => ({
       enrolled: true,
     }));
     props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login", () => {
@@ -201,7 +217,7 @@ describe("Quickaccess::LoginPage", () => {
   it("keeps normal passphrase login unchanged when Keycloak login is available", async () => {
     const props = defaultPropsWithSsoDisabled();
     props.context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
-    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({
+    props.context.port.addRequestListener("passbolt.keycloak-sso.crypto-login.get-status", () => ({
       enrolled: true,
     }));
     const login = jest.fn(() => {

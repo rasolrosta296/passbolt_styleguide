@@ -47,7 +47,7 @@ class LoginPage extends React.Component {
     let isKeycloakSsoAvailable = false;
     if (this.props.context.siteSettings?.isPluginEnabled("keycloakSso")) {
       try {
-        const status = await this.props.context.port.request("passbolt.keycloak-sso.crypto-enrollment.get-status");
+        const status = await this.props.context.port.request("passbolt.keycloak-sso.crypto-login.get-status");
         if (typeof status?.enrolled !== "boolean") {
           throw new Error("The extension returned an invalid Keycloak enrollment status.");
         }
