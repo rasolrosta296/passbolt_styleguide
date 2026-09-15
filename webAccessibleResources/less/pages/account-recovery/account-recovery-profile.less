@@ -1,0 +1,67 @@
+.account-recovery-profile {
+
+  p {
+    max-width: 100rem;
+  }
+
+  .account-recovery-status {
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+    background: var(--Workspace-Workspace-background);
+    padding: 1.6rem 0;
+    border-radius: var(--Button-border-radius);
+    max-width: 100rem;
+    align-self: stretch;
+
+    .account-recovery-review {
+      display: flex;
+      justify-content: space-between;
+
+      .status-wrapper {
+        flex: 1 1 auto;
+        margin: 0;
+        padding: 0 1.6rem;
+
+        .title {
+          font-weight: 600;
+        }
+
+        .status {
+          text-transform: capitalize;
+          display: inline-block;
+        }
+      }
+    }
+    .account-recovery-hints {
+      &:before {
+        content: "\25CF"; /* unicode character ● */
+        padding: 0 .5rem;
+      }
+      &.approved {
+        color: var(--Progress-and-entropy-bar-success);
+      }
+      &.rejected {
+        color: var(--Progress-and-entropy-bar-error);
+      }
+      &.pending {
+        color: var(--Progress-and-entropy-bar-warning);
+      }
+    }
+
+    .name-with-tooltip {
+      font-weight: bold;
+      .ellipsis();
+    }
+
+    .usercard-detailed-col-2 {
+      .content-wrapper {
+        .content {
+          .name, .subinfo {
+            overflow: inherit;
+          }
+        }
+      }
+    }
+  }
+}

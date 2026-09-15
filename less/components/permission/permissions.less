@@ -1,0 +1,324 @@
+.share-dialog {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 6.4rem 39rem 12.8rem;
+
+    .dialog {
+        padding: 0;
+        max-width: 70rem;
+        min-width: 50rem;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-height: 100%;
+        align-self: center;
+
+        .dialog-header {
+            padding: 2.4rem;
+
+            .dialog-title-wrapper h2 {
+              font-size: 2.4rem;
+            }
+          }
+
+  .dialog-content {
+    display: flex;
+    padding-right: 1.6rem;
+    padding-left: 1.6rem;
+    align-items: center;
+    align-self: stretch;
+    min-height: 0;
+
+    .share-form {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex: 1 0 0;
+        align-self: stretch;
+        min-width: 0;
+
+        .form-content {
+          padding: 0;
+          max-height: calc(100% - 6.8rem);
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+
+          .scroll {
+            border-radius: var(--Section-border-radius) var(--Section-border-radius) 0 0;
+
+            &:last-child {
+                border-radius: var(--Section-border-radius);
+            }
+          }
+
+          > * {
+            margin-bottom: 0;
+          }
+        }
+
+        .permission-add {
+          padding: 1.6rem;
+        }
+
+        .input.text.autocomplete input  {
+          margin-bottom: 0;
+        }
+
+        // remove all margin bottom for direct child element
+        & > * {
+          margin-bottom: 0;
+        }
+      }
+
+      .submit-wrapper {
+        display: flex;
+        padding: 1.6rem 0;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 2.4rem;
+        align-self: stretch;
+      }
+    }
+  }
+}
+
+.dialog {
+    .permissions {
+        &.scroll {
+            .scroll-shadow();
+            margin: 0;
+        }
+
+        .row {
+            padding: 1.6rem 1.6rem 1.6rem 3.2rem;
+            border-bottom: 1px solid var(--Workspace-Dividers);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+
+            // Only used by the EditUserGroup dialog, the share dialog displays change status chips instead.
+            &.permission-updated {
+                background: var(--Notifications-Alert-background);
+            }
+
+            /* aro summary */
+            .avatar {
+                flex: none;
+                float: left;
+
+                img,
+                svg {
+                    width: 4.2rem;
+                    height: 4.2rem;
+                }
+            }
+            // The only flexible item of the row. Every sibling is pinned, so the recipient name and
+            // username absorb the whole horizontal pressure and ellipsise instead of the row
+            // overflowing and clipping its trailing action.
+            .aro {
+                flex: 1 1 auto;
+                width: 30%;
+                min-width: 0; // important to keep the container size for ellipsis
+                float: left;
+                padding: 0 1rem 0 1.6rem;
+                .aro-name {
+                  display: flex;
+                  align-items: center;
+                  font-size: 1.5rem;
+                  line-height: 2rem;
+                  font-weight: 700;
+                }
+                .aro-details {
+                    display: flex;
+                    font-size: 1.2rem;
+                    line-height: 1.6rem;
+                    color: var(--Text-and-icons-Secondary-text);
+                }
+                .ellipsis {
+                    display:inline-block;
+                    max-width:100%;
+                }
+            }
+
+            .tooltip-portal {
+                flex: none;
+                margin: 0 .8rem;
+                line-height: 1.6rem;
+
+                svg {
+                  width: 1.6rem;
+                  height: 1.6rem;
+                }
+            }
+
+            // Pending change status chip. Sized and coloured after the design: a 2.6rem pill whose
+            // label is optically centred by the bottom padding. The chips defaults are overridden on
+            // purpose, they target the smaller inline beta/new pills.
+            .chips {
+                box-sizing: border-box;
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 2.6rem;
+                margin-top: 0;
+                margin-right: .8rem;
+                padding: 0 .8rem .2rem;
+                font-size: 1.2rem;
+                color: var(--Text-and-icons-Main-text);
+
+                &.added {
+                    background: var(--Palette-Success);
+                }
+
+                &.modified {
+                    background: var(--Palette-Info);
+                }
+
+                &.removed {
+                    background: var(--Palette-Error);
+                }
+            }
+
+            .rights {
+                float: left;
+                flex: none;
+            }
+
+            .actions {
+                flex: none;
+            }
+
+            .remove-item,
+            .revert-item {
+              margin-left: .8rem;
+            }
+
+            button.group-visibility-toggle {
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 1.6rem;
+                margin-right: .8rem;
+                padding: 0;
+
+                svg {
+                    width: 1.2rem;
+                    height: 1.2rem;
+                }
+            }
+
+            &.has-caret {
+                padding-left: .8rem;
+            }
+        }
+
+        .row.group-user-item .avatar {
+            padding-left: 4.2rem;
+        }
+
+        /* shimmering skeleton when loading */
+        .row.skeleton {
+            height: 5.6rem;
+            position:relative;
+            .avatar {
+                float: left;
+                width: 4.2rem;
+                height: 4.2rem;
+                background: var(--Dialog-Dialog-background);
+                border-radius:50%;
+                flex:none
+            }
+            .aro {
+                .aro-name {
+                    margin-top:.25em;
+                    width: 7em;
+                    height: 1em;
+                    background: var(--Dialog-Dialog-background);
+                    .rounded();
+                }
+                .aro-details {
+                    .rounded();
+                    margin-top:.5em;
+                    width: 10em;
+                    height: 1em;
+                    background: var(--Dialog-Dialog-background);
+                }
+
+            }
+            .actions {
+                border-radius:50%;
+                float:right;
+                width: 1.116rem;
+                height: 1.116rem;
+                margin-top:.7rem;
+                margin-right:1.62rem;
+                background: var(--Dialog-Dialog-background);
+                margin-left:0.625rem;
+            }
+            .shimmer {
+                position:absolute;
+                top:0;
+                left:0;
+            }
+        }
+
+        // The whole .aro is faded rather than its leaves so the fingerprint tooltip sitting next to
+        // the recipient name dims along with it.
+        li.suspended {
+            .avatar, .aro {
+                opacity: 0.5;
+            }
+        }
+
+        // Fade the same elements as li.suspended so a suspended and removed row dims only once.
+        // The change status chip and the revert action keep their full opacity.
+        li.permission-removed {
+            .avatar, .aro, .rights, > .tooltip-portal {
+                opacity: 0.5;
+            }
+        }
+    }
+}
+
+// Share dialog row metrics, kept out of the shared .permissions block on purpose: the edit and
+// create group dialogs reuse the same markup and keep the roomier padding and the standard 3rem
+// inline select.
+.share-dialog .dialog .permissions .row {
+    padding-top: .8rem;
+    padding-bottom: .8rem;
+
+    .select-container.permission.inline {
+        height: 2.6rem;
+
+        .select {
+            font-size: 1.3rem;
+            line-height: 1.8rem;
+
+            .selected-value {
+                padding: .4rem 1.6rem;
+            }
+
+            // A disabled select keeps its label readable, the row fade is the only thing that dims
+            // it. Without this the base .selected-value.disabled fade would compound with it.
+            .selected-value.disabled {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+// Read-only mode fades no row, so the caret alone signals the selects are not interactive. Scoped to
+// that mode on purpose: elsewhere a disabled select sits on a faded row, and a second fade here
+// would compound down to 0.125.
+.share-dialog.read-only .permissions .selected-value.disabled svg {
+    opacity: 0.25;
+}

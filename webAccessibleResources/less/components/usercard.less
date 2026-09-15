@@ -1,0 +1,209 @@
+.usercard-col-2(@avatar-size) {
+    display: flex;
+    gap: 1.6rem;
+    padding: .8rem 1.6rem;
+    border-top: .1rem solid var(--Workspace-Dividers-lighter);
+
+    &:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .content-wrapper {
+        overflow: hidden;
+        width: 100%;
+
+        .content {
+            .name {
+                .ellipsis();
+
+                &-with-tooltip {
+                    font-weight: bold;
+                    .ellipsis();
+                }
+            }
+
+            .subinfo {
+                .ellipsis();
+                &.third-level {
+                    padding-top: .8rem;
+                }
+                color: var(--Text-and-icons-Secondary-text);
+                font-size: 1.2rem;
+
+                .dateTimeAgo {
+                    color: var(--Text-and-icons-Main-text);
+                }
+
+                .chips-group {
+                    float: right;
+                    display: flex;
+                    .chips {
+                        font-size: 1.2rem;
+                        color: var(--Status-and-role-pills-Status-pill-text);
+                        padding-top: 0.1rem;
+                        padding-bottom: 0.1rem;
+                        border-radius: 1.2rem;
+                        margin-top: -0.1rem;
+
+                        &.user-role {
+                            color: var(--Status-and-role-pills-Role-pill-user-text);
+                            background-color: var(--Status-and-role-pills-Role-pill-user-background);
+
+                            &.admin {
+                                color: var(--Status-and-role-pills-Role-pill-admin-text);
+                                background-color: var(--Status-and-role-pills-Role-pill-admin-background);
+                            }
+                        }
+
+                        &.active {
+                            background-color: var(--Status-and-role-pills-Status-pill-active-background);
+                        }
+
+                        &.suspended {
+                            background-color: var(--Status-and-role-pills-Status-pill-suspended-background);
+                        }
+
+                        &.deleted {
+                            background-color: var(--Status-and-role-pills-Status-pill-deleted-background);
+                        }
+
+                        & + .chips {
+                            margin-left: 0.4rem;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .avatar {
+        width: @avatar-size;
+        height: @avatar-size;
+
+        svg {
+            &:not(.attention-required) {
+                width: @avatar-size;
+                height: @avatar-size;
+            }
+
+            &.attention-required {
+                width: 1.4rem;
+                height: 1.4rem;
+                top: -0.07rem;
+                left: 2.8rem;
+            }
+        }
+
+        img {
+            width: @avatar-size;
+            height: @avatar-size;
+        }
+    }
+
+    ul.permissions-list {
+        display: flex;
+        flex-direction: column;
+        gap: .8rem;
+        padding-top: .8rem;
+        font-size: 1.4rem;
+
+        li {
+            display: flex;
+            gap: .8rem;
+            width: 100%;
+            align-items: center;
+
+            .avatar {
+                margin-left: 0;
+                float: left;
+                width: 2.4rem;
+                height: 2.4rem;
+                align-items: center;
+
+                svg {
+                    width: 2.4rem;
+                    height: 2.4rem;
+                }
+
+                img {
+                    width: 2.4rem;
+                    height: 2.4rem;
+                }
+            }
+            .name {
+                width: 100%;
+                &.crossed {
+                    text-decoration: line-through;
+                }
+                &-with-tooltip {
+                    font-weight: bold;
+                }
+            }
+            .type {
+                span {
+                    font-size: 1.2rem;
+                    color: var(--Text-and-icons-Main-text-reversed);;
+                    padding: 0 .8rem .2rem;
+                    border-radius: var(--Button-border-radius);
+                    &.created {
+                        background: var(--Palette-Contrast-4);
+                    }
+                    &.updated {
+                        background: var(--Palette-Contrast-1);
+                    }
+                    &.removed {
+                        background: var(--Palette-Contrast-3);
+                    }
+                }
+            }
+        }
+    }
+
+    &.suspended {
+        .avatar, .name, .subinfo {
+            opacity: 0.5;
+        }
+    }
+}
+
+
+.usercard-col-2 {
+    .usercard-col-2(34px);
+}
+
+.usercard-detailed-col-2 {
+    display: flex;
+    gap: 1.6rem;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+
+    .usercard-col-2(42px);
+
+    // Animation used to show that an activity is new.
+    @keyframes highlight {
+        from { background-color: var(--Palette-Select-highlight-2); }
+        to { background-color: transparent; }
+    }
+
+    // Style to apply when an activity is new.
+    &.highlight {
+        background-color: var(--Palette-Select-highlight-2);
+        animation-delay: 2s;
+        animation-duration: 5s;
+        animation-name: highlight;
+        animation-fill-mode: forwards;
+    }
+
+    .content-wrapper .content {
+        .name, .subinfo {
+          color: var(--Text-and-icons-Secondary-text);
+        }
+    }
+
+    .content-wrapper .content .name {
+        white-space: normal;
+        .creator, .item {
+            color: var(--Text-and-icons-Main-text);
+        }
+    }
+}

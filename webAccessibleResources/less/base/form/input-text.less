@@ -1,0 +1,107 @@
+/*
+	Generic Form Item
+
+	Description	: labels and input are wrapped in a <div.text>
+
+	:hover			- subtle hover highlight
+	:active			- inset box shadow
+	.disabled		- grey out to indicate it cannot be used
+*/
+input[type=number],
+input[type=text],
+input[type=date],
+input[type=email],
+input[type=password],
+input[type=search],
+textarea {
+  ._field-borders();
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 2rem;
+  width: 100%;
+  margin-bottom: 1.2rem;
+  padding: .8rem var(--Search-field-padding);
+  border: none;
+  border-radius: var(--Button-border-radius);
+  box-sizing: border-box;
+  background: var(--Field-Field-background);
+  color: var(--Text-and-icons-Main-text);
+  outline: 0;
+
+  // Disabled fields.
+  &:disabled {
+    cursor: default;
+    opacity: .5;
+  }
+
+  // Placeholder
+  &:placeholder-shown {
+    text-overflow: ellipsis;
+  }
+
+  // Fields pressed
+  &.full-width {
+    max-width: none;
+  }
+}
+
+//Edge specific, not to show hide/show button on password as we handle it ourselves
+::-ms-reveal {
+  display: none;
+}
+
+input[type=number] {
+  width: 4.6rem;
+  text-align: center;
+  padding: .5rem 1rem;
+  border-radius: var(--Token-radius);
+  -moz-appearance: textfield; // Remove arrows for Firefox
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none; // Remove arrows for Chrome, Safari, Edge, Opera
+    margin: 0;
+  }
+
+  &.in-field {
+    ._field-borders();
+    width: 6.0rem;
+    padding: .5rem .4rem;
+    height: 3rem; // Fix the height of the input on firefox
+    background: var(--Field-Infield-button-background);
+
+    &:hover, &focus, &:active, &:disabled {
+      background: var(--Field-button-background);
+    }
+  }
+}
+
+/*
+	Always visible arrow for Chrome to be coherent with Firefox
+*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/*
+	Textarea Textfield
+*/
+textarea {
+  min-height: 3.4rem;
+  height: 9rem;
+  max-height: 27rem;
+  resize: vertical;
+  scrollbar-width: thin; // Only works for firefox
+  border-radius: var(--Menu-radius);
+
+  &.full_report {
+    height: 15rem;
+  }
+}
+
+.textarea.large textarea {
+  width: 30rem;
+  height: 9rem;
+}

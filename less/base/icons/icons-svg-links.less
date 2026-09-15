@@ -1,0 +1,20 @@
+button {
+    &.disabled {
+        svg {
+            pointer-events: none;
+            cursor: default;
+        }
+    }
+    &.unfav {
+      svg {
+        --icon-color: none;
+        --icon-background-color: var(--Favourite-Favourite-off);
+      }
+    }
+    &.fav {
+      svg {
+        --icon-color: none;
+        --icon-background-color: var(--Favourite-Favourite-on);
+      }
+    }
+}

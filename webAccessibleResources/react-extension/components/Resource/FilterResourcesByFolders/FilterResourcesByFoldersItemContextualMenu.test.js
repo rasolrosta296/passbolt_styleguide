@@ -1,0 +1,187 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.11.0
+ */
+
+/**
+ * Unit tests on FoldersTreeItemContextualMenuContextualMenu in regard of specifications
+ */
+import {
+  defaultProps,
+  propsWithDenyUiAction,
+  propsWithFolderPermissionRead,
+  propsWithFolderPermissionUpdate,
+} from "./FilterResourcesByFoldersItemContextualMenu.test.data";
+import CreateResourceFolder from "../../ResourceFolder/CreateResourceFolder/CreateResourceFolder";
+import RenameResourceFolder from "../../ResourceFolder/RenameResourceFolder/RenameResourceFolder";
+import HandlePermissionWorkflow, {
+  PERMISSION_WORKFLOW_OPERATION,
+} from "../HandlePermissionWorkflow/HandlePermissionWorkflow";
+import ExportResources from "../ExportResources/ExportResources";
+import DeleteResourceFolder from "../../ResourceFolder/DeleteResourceFolder/DeleteResourceFolder";
+import FilterResourcesByFoldersItemContextualMenuPage from "./FilterResourcesByFoldersItemContextualMenu.test.page";
+import { defaultUserAppContext } from "../../../contexts/ExtAppContext.test.data";
+import { denyRbacContext } from "../../../../shared/context/Rbac/RbacContext.test.data";
+import { defaultUserDto } from "../../../../shared/models/entity/user/userEntity.test.data";
+import { v4 as uuidv4 } from "uuid";
+import ActionAbortedMissingMetadataKeys from "../../Metadata/ActionAbortedMissingMetadataKeys/ActionAbortedMissingMetadataKeys";
+
+beforeEach(() => {
+  jest.resetModules();
+});
+
+describe("FilterResourcesByFoldersItemContextualMenu", () => {
+  describe("As LU I can create a folder in a folder.", () => {
+    it("As LU I can create a folder in a folder I have at least an update permission on.", async () => {
+      const props = defaultProps(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.createFolder();
+      expect(props.dialogContext.open).toHaveBeenCalledWith(CreateResourceFolder, { folderParentId: props.folder.id });
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("As LU I cannot create a folder in a folder I have read only access.", async () => {
+      const props = propsWithFolderPermissionRead(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.createItem.hasAttribute("disabled")).toBeTruthy();
+    });
+  });
+
+  describe("As LU I can rename a folder.", () => {
+    it("As LU I can rename a folder I have at least an update permission on.", async () => {
+      const props = defaultProps(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.renameFolder();
+      expect(props.dialogContext.open).toHaveBeenCalledWith(RenameResourceFolder);
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("As LU I cannot rename a folder in a folder I have read only access.", async () => {
+      const props = propsWithFolderPermissionRead(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.renameItem.hasAttribute("disabled")).toBeTruthy();
+    });
+  });
+
+  describe("As LU I can share a folder.", () => {
+    it("As LU I can share a folder I have owner permission on.", async () => {
+      const props = defaultProps(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.shareFolder();
+      expect(props.workflowContext.start).toHaveBeenCalledWith(HandlePermissionWorkflow, {
+        operation: PERMISSION_WORKFLOW_OPERATION.SHARE_FOLDER,
+        folder: props.folder,
+      });
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("As LU I cannot share a folder I have read only access.", async () => {
+      const props = propsWithFolderPermissionRead(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.shareItem.hasAttribute("disabled")).toBeTruthy();
+    });
+
+    it("As LU I cannot share a folder I have update permission on.", async () => {
+      const props = propsWithFolderPermissionUpdate(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.shareItem.hasAttribute("disabled")).toBeTruthy();
+    });
+
+    it("As LU I cannot share a folder if I have missing metadata keys.", async () => {
+      const props = defaultProps({
+        context: defaultUserAppContext({
+          loggedInUser: defaultUserDto({ missing_metadata_key_ids: [uuidv4()] }, { withRole: true }),
+        }),
+      }); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.shareFolder();
+      expect(props.dialogContext.open).toHaveBeenCalledWith(ActionAbortedMissingMetadataKeys);
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("I should see the share option when rbac is available", async () => {
+      expect.assertions(2);
+
+      const props = defaultProps(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+
+      await page.filterResourcesByFoldersItemContextualMenu.shareFolder();
+      expect(props.workflowContext.start).toHaveBeenCalledWith(HandlePermissionWorkflow, {
+        operation: PERMISSION_WORKFLOW_OPERATION.SHARE_FOLDER,
+        folder: props.folder,
+      });
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("I should not see the share option when rbac is unavailable", async () => {
+      expect.assertions(1);
+
+      const props = defaultProps(); // The props to pass
+      props.rbacContext = denyRbacContext();
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+
+      expect(page.filterResourcesByFoldersItemContextualMenu.shareItem).toBeNull();
+    });
+  });
+
+  describe("As LU I can export a folder.", () => {
+    it("As LU I can export a folder.", async () => {
+      const props = defaultProps(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.exportFolder();
+      expect(props.dialogContext.open).toHaveBeenCalledWith(ExportResources);
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("As LU I cannot export a folder if disabled by API flag.", async () => {
+      const appContext = {
+        siteSettings: {
+          canIUse: () => false,
+        },
+      };
+      const context = defaultUserAppContext(appContext); // The applicative context
+      const props = defaultProps({ context });
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.exportItem).toBeNull();
+    });
+
+    it("As LU I cannot export a folder if denied by RBAC.", async () => {
+      const props = propsWithDenyUiAction();
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.exportItem).toBeNull();
+    });
+  });
+
+  describe("As LU I can delete a folder.", () => {
+    it("As LU I can delete a folder I have owner permission on.", async () => {
+      const props = defaultProps(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.deleteFolder();
+      expect(props.dialogContext.open).toHaveBeenCalledWith(DeleteResourceFolder);
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("As LU I can delete a folder I have update permission on.", async () => {
+      const props = propsWithFolderPermissionUpdate(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      await page.filterResourcesByFoldersItemContextualMenu.deleteFolder();
+      expect(props.dialogContext.open).toHaveBeenCalledWith(DeleteResourceFolder);
+      expect(props.hide).toHaveBeenCalled();
+    });
+
+    it("As LU I cannot delete a folder I have read only access.", async () => {
+      const props = propsWithFolderPermissionRead(); // The props to pass
+      const page = new FilterResourcesByFoldersItemContextualMenuPage(props);
+      expect(page.filterResourcesByFoldersItemContextualMenu.deleteItem.hasAttribute("disabled")).toBeTruthy();
+    });
+  });
+});

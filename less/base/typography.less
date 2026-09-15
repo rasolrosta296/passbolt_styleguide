@@ -1,0 +1,92 @@
+//
+// FONT FAMILIES
+//
+/* opensans */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    src: local('Open Sans'), local('OpenSans'), url('@{fonts}/opensans-variable-font.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  src: local('Open Sans'), local('OpenSans'), url('@{fonts}/opensans-italic-variable-font.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Obfuscation';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Obfuscation'), local('Obfuscation-Regular'), url('@{fonts}/obfuscation-regular.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'Inconsolata';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Inconsolata'), local('Inconsolata-Regular'), url('@{fonts}/inconsolata-regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Passbolt-logo';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Passbolt-logo'), url('@{fonts}/passbolt-logo-Regular.otf') format('opentype');
+}
+
+body {
+    font-family: 'Open Sans', Verdana, sans-serif;
+    color: var(--Text-and-icons-Main-text);
+    font-style: normal;
+    font-weight: 400;
+}
+.code {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.password-typography {
+    font-family: 'Inconsolata', 'Open Sans', Verdana, sans-serif;
+    font-size: 1.6rem;
+}
+
+//
+// SIZE
+//
+html {
+    font-size: 62.5%; /* =10px */
+}
+body {
+    font-size: 1.5rem;
+    line-height: normal;
+}
+h1 {
+    font-size: 2.2rem;
+    line-height: 3.2rem;
+}
+h2 {
+    font-size: 1.8rem;
+    line-height: 2.4rem;
+}
+h3 {
+  font-size: 1.6rem;
+  line-height: 2.4rem;
+}
+p {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin: 0;
+    overflow-wrap: break-word;
+}
+code {
+    font-size: 1.1rem;
+}
+
+// force font family to avoid side effect on different browser
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: 'Open Sans', Verdana, sans-serif;
+}

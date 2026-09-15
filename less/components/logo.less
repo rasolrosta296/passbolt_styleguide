@@ -1,0 +1,17 @@
+// logo should always fit
+.logo-svg {
+    &.no-img {
+        width: 15rem;
+        height: 2.6rem;
+        flex-shrink: 0;
+        --icon-color: @icon-logo-color;
+    }
+    h1 {
+        display: none;
+    }
+
+    &.bigger {
+        width: 200px;
+        height: 45px;
+    }
+}

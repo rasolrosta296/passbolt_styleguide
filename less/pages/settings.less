@@ -1,0 +1,254 @@
+.page.settings .app .panel.main .panel.middle {
+  .breadcrumbs-and-grid {
+    align-items: flex-start;
+    background: none;
+
+    .top-bar {
+      padding-bottom: 1.2rem;
+      background: var(--Workspace-Panels-background);
+      border-radius: var(--Section-border-radius) var(--Section-border-radius) 0 0;
+      border-bottom: 1px solid var(--Workspace-Dividers);
+    }
+
+    .main-column {
+      background: var(--Workspace-Panels-background);
+      border-radius: 0 0 var(--Section-border-radius) var(--Section-border-radius);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      flex: 1 0 0;
+      align-self: stretch;
+
+      &:last-child {
+        border-radius: 0;
+      }
+    }
+  }
+
+  .main-page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    h3 {
+      font-size: 2rem;
+      margin: 0;
+      padding: 1.6rem 0 0;
+      align-self: stretch;
+    }
+
+    h4 {
+      font-size: 1.8rem;
+      margin: 0 -1.6rem;
+      align-self: stretch;
+      border-top: .1rem solid var(--Workspace-Dividers);
+      padding: .8rem 1.6rem 0;
+    }
+
+    .main-column {
+      .main-content {
+        padding: 0 1.6rem 3.6rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex: 1 0 0;
+        align-self: stretch;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--Workspace-Elevator) transparent;
+
+        .divider {
+          margin: 0px -1.6rem .8rem -1.6rem;
+          border-bottom: .1rem solid var(--Workspace-Dividers);
+          align-self: stretch;
+        }
+
+        & > * {
+          margin-bottom: 1.6rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        form {
+          margin: 0;
+          align-self: stretch;
+          & > * {
+            margin-bottom: 1.6rem;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .warning.message {
+      align-self: stretch;
+      border-radius: 0 0 var(--Section-border-radius) var(--Section-border-radius);
+    }
+  }
+
+  .actions-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1.6rem 0;
+    gap: 1.6rem;
+    height: 3.6rem;
+
+    .left-actions-wrapper {
+      display: flex;
+      gap: 1.6rem;
+      margin-right: auto;
+    }
+
+    .button.primary, .button.secondary {
+      padding: .8rem 2.4rem;
+      font-size: 1.8rem;
+    }
+  }
+
+  .profile, .key-info {
+    .table-info {
+      margin: 0;
+    }
+  }
+
+  .key-info .table-info {
+    .fingerprint {
+      line-height: 1.6rem;
+    }
+  }
+
+  .sidebar-help-section {
+    .input.textarea.gpgkey textarea.fluid.code {
+      max-height: 50rem;
+      height: 30rem;
+      margin-bottom: 0;
+    }
+  }
+
+  .profile-passphrase {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 0;
+    align-self: stretch;
+
+    .password-management-bg {
+      background: transparent url('@{images}/illustrations/passphrase_intro.svg') center center no-repeat;
+      height: 16rem;
+      max-width: 64rem;
+      align-self: stretch;
+    }
+
+    .enter-passphrase {
+      align-self: stretch;
+      .input-password-wrapper {
+        max-width: 45rem;
+      }
+    }
+
+    .password-hints {
+      margin:.8rem 0 1.6rem 0;
+
+      li {
+        font-size: 1.6rem;
+      }
+    }
+  }
+
+  .recovery-kit {
+    .warning.message p {
+      max-width: inherit;
+    }
+  }
+
+  .profile-choose-security-token {
+    .input-security-token {
+      .label-required-inline {
+        margin-bottom: 1.6rem;
+      }
+
+      .input.text {
+        .rounded();
+        font-size: 3.8rem;
+        max-width: 12rem;
+        float: left;
+        text-align: center;
+        margin-right: 2.4rem;
+      }
+      .circle-picker {
+        float:left;
+      }
+      .randomize-button-wrapper {
+        float:left;
+        text-align: center;
+        clear:both;
+        cursor: pointer;
+      }
+    }
+    .submit-wrapper {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .profile-mobile-transfer {
+    .stores {
+      display: flex;
+      gap: 1.6rem;
+      flex-direction: column;
+    }
+    .app-store {
+      background: transparent url('@{images}/third_party/appstore.svg') left center no-repeat;
+      height: 5.2rem;
+    }
+    .play-store {
+      background: transparent url('@{images}/third_party/playstore.svg') left center no-repeat;
+      height: 4.4rem;
+    }
+
+    .app-store, .play-store {
+      width: 15.3rem;
+      border: 0;
+
+      &::after {
+        content: none;
+      }
+    }
+
+    .transfer-account {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: wrap;
+
+      & > * {
+        margin: .8rem 0;
+      }
+
+      svg {
+        width: 40.9rem;
+      }
+    }
+    #qr-canvas {
+      margin: 1.6rem auto;
+    }
+    .submit-wrapper {
+      .button.cancel {
+        margin-left: auto;
+      }
+    }
+  }
+
+  .profile-desktop-export {
+    .windows-store {
+      display: block;
+      height: 5.4rem;
+      border: 0;
+    }
+  }
+}

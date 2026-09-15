@@ -1,0 +1,96 @@
+.recover-account-settings, .save-recovery-account-settings-dialog {
+  .input.radio {
+    display: flex;
+    align-items: center;
+    background-color: var(--Workspace-Panels-background);
+    margin-right: 0;
+
+    label p {
+      font-weight: normal;
+    }
+
+    .radio-text {
+      padding-left: 1.6rem;
+    }
+  }
+
+  .recovery-key-details {
+    padding: 1.6rem;
+    display: flex;
+    align-items: baseline;
+    border-radius: var(--Menu-radius);
+    background: var(--Action-button-Action-button-background-2);
+    width: calc(100% - 3.2rem);
+    .table-info {
+      &.recovery-key {
+        margin-top: 0;
+        width: 100%;
+      }
+      .table-button {
+        float: right;
+
+        button {
+          margin: 0;
+          max-width: 30rem;
+        }
+      }
+
+      .empty-value {
+        color: @text-light-color;
+      }
+      .fingerprint .label {
+        display: block;
+      }
+      .fingerprint .value {
+        font-family: Inconsolata;
+        font-size: 16px;
+        line-height: 120%;
+        padding-top: 0.6rem;
+      }
+
+    tr {
+      td {
+        &:first-child {
+          color: var(--Text-and-icons-Secondary-text);
+          font-size: 1.5rem;
+        }
+        color: var(--Text-and-icons-Main-text);
+        font-size: 1.5rem;
+      }
+    }
+    }
+  }
+}
+
+.save-recovery-account-settings-dialog {
+  .form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+
+    .account-recovery-setting-save {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 1.6rem;
+      border-radius: var(--Menu-radius);
+      background: var(--Action-button-Action-button-background-2);
+
+      .name {
+        font-weight: 700;
+        font-size: 15px;
+      }
+
+      .info {
+        margin-top: 0.4rem;
+        font-size: 13px;
+        font-weight: 400;
+      }
+    }
+  }
+  .submit-wrapper .button {
+    &.button-left {
+      background: @default-background;
+    }
+  }
+}

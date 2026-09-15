@@ -1,0 +1,218 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         3.1.0
+ */
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
+import MockTranslationProvider from "../../../test/mock/components/Internationalisation/MockTranslationProvider";
+import EnterNewPassphrase from "./EnterNewPassphrase";
+import { waitForTrue } from "../../../../../test/utils/waitFor";
+import userEvent from "@testing-library/user-event";
+
+/**
+ * The EnterNewPassphrase component represented as a page
+ */
+export default class EnterNewPassphrasePage {
+  /**
+   * Default constructor
+   * @param props Props to attach
+   */
+  constructor(props) {
+    this._page = render(
+      <MockTranslationProvider>
+        <EnterNewPassphrase {...props} />
+      </MockTranslationProvider>,
+    );
+    this.user = userEvent.setup();
+  }
+
+  /**
+   * Returns the user confirm passphrase element
+   */
+  get enterNewPassphrase() {
+    return this._page.container.querySelector(".profile-passphrase");
+  }
+
+  /**
+   * Returns the title element
+   */
+  get title() {
+    return this._page.container.querySelector(".profile-passphrase h3").textContent;
+  }
+
+  /**
+   * Returns the passphrase input element
+   */
+  get passphraseInput() {
+    return this._page.container.querySelector("#passphrase-input");
+  }
+
+  /**
+   * Returns the obfuscate button
+   */
+  get obfuscateButton() {
+    return this._page.container.querySelector(".password-view");
+  }
+
+  /**
+   * Returns the passphrase error message element
+   */
+  get passphraseErrorMessage() {
+    return this._page.container.querySelector(".error-message").innerHTML;
+  }
+
+  /**
+   * Returns the current value of the passphrase
+   */
+  get passphrase() {
+    return this.passphraseInput.value;
+  }
+
+  /**
+   * Returns true if the component is in an obfuscated mode
+   */
+  get isObfuscated() {
+    return this.passphraseInput.getAttribute("type") === "password";
+  }
+
+  /**
+   * Returns the element where is displayed the passphrase complexity text
+   */
+  get passphraseComplexity() {
+    return this._page.container.querySelector(".complexity-text");
+  }
+
+  /**
+   * Returns true if the current passphrase is very weak
+   */
+  get isVeryWeakPassphrase() {
+    return Boolean(this.passphraseComplexity.textContent.startsWith("Very weak"));
+  }
+
+  /**
+   * Returns true if the current passphrase is weak
+   */
+  get isWeakPassphrase() {
+    return Boolean(this.passphraseComplexity.textContent.startsWith("Weak"));
+  }
+
+  /**
+   * Returns true if the current passphrase is fair
+   */
+  get isFairPassphrase() {
+    return Boolean(this.passphraseComplexity.textContent.startsWith("Fair"));
+  }
+
+  /**
+   * Returns true if the current passphrase is strong
+   */
+  get isStrongPassphrase() {
+    return Boolean(this.passphraseComplexity.textContent.startsWith("Strong"));
+  }
+
+  /**
+   * Returns true if the current passphrase is empty
+   */
+  get isEmptyPassphrase() {
+    return Boolean(this.passphraseComplexity.textContent.startsWith("Quality"));
+  }
+
+  /**
+   * Returns true if the current passphrase is very strong
+   */
+  get isVeryStrongPassphrase() {
+    return Boolean(this.passphraseComplexity.textContent.startsWith("Very strong"));
+  }
+
+  /**
+   * Returns the update button element
+   */
+  get updateButton() {
+    return this._page.container.querySelector('.actions-wrapper button[type=\"submit\"]');
+  }
+
+  /**
+   * Returns the cancel button element
+   */
+  get cancelButton() {
+    return this._page.container.querySelector('.actions-wrapper button[type=\"button\"]');
+  }
+
+  /**
+   * Returns true if one is processing
+   */
+  get isProcessing() {
+    return this.updateButton.classList.contains("processing");
+  }
+
+  /**
+   * Returns true if one can go to the next step
+   */
+  get canUpdate() {
+    return !this.updateButton.classList.contains("disabled");
+  }
+
+  /**
+   * Returns true if the user can change something like the passphrase
+   */
+  get canChange() {
+    return !this.passphraseInput.hasAttribute("disabled");
+  }
+
+  /**
+   * Returns the passphrase's error message for powned password
+   */
+  get passphraseBreachedErrorMessage() {
+    return this._page.container.querySelector(".invalid-passphrase.error-message");
+  }
+
+  /**
+   * Returns true if the page object exists in the container
+   */
+  exists() {
+    return this.enterNewPassphrase !== null;
+  }
+
+  /** Click on the element */
+  async click(element) {
+    await this.user.click(element);
+  }
+
+  /** fill the input element with data */
+  fillInput(element, data) {
+    const dataInputEvent = { target: { value: data } };
+    fireEvent.change(element, dataInputEvent);
+  }
+
+  /** fill the passphrase input element with data */
+  async insertPassphrase(data) {
+    this.fillInput(this.passphraseInput, data);
+    await waitForTrue(() => this.passphraseInput.value === data);
+  }
+
+  /** click update */
+  async update() {
+    await this.user.click(this.updateButton);
+  }
+
+  /** click cancel */
+  async cancel() {
+    await this.click(this.cancelButton);
+  }
+
+  /**
+   * Toggle the obfuscate mode
+   */
+  async toggleObfuscate() {
+    await this.click(this.obfuscateButton);
+  }
+}

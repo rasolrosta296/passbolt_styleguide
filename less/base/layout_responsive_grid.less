@@ -1,0 +1,123 @@
+/*
+	Grid Layout
+	@credit: One% CSS Grid - 12 Columns Fluid CSS Grid System
+*/
+/*
+ * Main container for all
+ */
+.grid-responsive-12,
+.grid {
+    .row {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+        .main-column {
+            border-radius: var(--Section-border-radius) var(--Section-border-radius) 0 0;
+
+            & > * {
+                margin: 1.6rem;
+            }
+
+            form {
+                margin: 0;
+                & > * {
+                    margin: 1.6rem;
+                }
+            }
+
+            .message {
+              margin: 0 0 .8rem 0;
+            }
+
+            .accordion {
+              margin: 0;
+              &.error-details {
+                margin: 1.6rem;
+              }
+              .accordion-header {
+                button {
+                  display: flex;
+                  align-items: center;
+                  border: none;
+
+                  .svg-icon {
+                    margin-right: .4rem;
+                  }
+                }
+              }
+              .accordion-content {
+                margin: 1.6rem;
+              }
+            }
+
+            h3 {
+                padding: 1.6rem;
+                margin: 0;
+                font-size: 2rem;
+                line-height: normal;
+
+                & > * {
+                  margin: 0;
+                }
+
+                label {
+                  font-size: 2rem;
+                  line-height: 2.7rem;
+                }
+            }
+
+            h4 {
+                border-top: .1rem solid @workspace-title-border;
+                font-size: 1.8rem;
+                line-height: 2.5rem;
+
+                &.no-border {
+                  border: none;
+                  margin: 0;
+                }
+
+                button {
+                    font-weight: bold;
+                }
+
+                label, button {
+                  font-size: 1.8rem;
+                  line-height: 2.5rem;
+                }
+            }
+        }
+
+        .last {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.6rem;
+            align-self: stretch;
+            padding-right: 1.6rem;
+
+            .sidebar {
+                background: var(--Workspace-Panels-background);
+                border-radius: var(--Section-border-radius) var(--Section-border-radius) 0 0;
+                height: 100%;
+
+                & > * {
+                    margin: 1.6rem;
+
+                    &:last-child {
+                      margin-bottom: 0;
+                      padding-bottom: 1.6rem;
+                    }
+                }
+
+                h3 {
+                    padding: .8rem 1.6rem 1.1rem 1.6rem;
+                    margin: 0;
+                    border-bottom: .1rem solid @workspace-title-border;
+                    font-size: 2rem;
+                    line-height: 2.7rem;
+                }
+            }
+        }
+    }
+}

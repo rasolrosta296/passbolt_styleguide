@@ -1,0 +1,137 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.13.0
+ */
+import React from "react";
+import PropTypes from "prop-types";
+import { withAppContext } from "../../../../shared/context/AppContext/AppContext";
+import { withUserWorkspace } from "../../../contexts/UserWorkspaceContext";
+import DisplayUserGroupDetailsInformation from "../DisplayUserGroupDetailsInformation/DisplayUserGroupDetailsInformation";
+import GroupAvatar from "../../Common/Avatar/GroupAvatar";
+import DisplayUserGroupDetailsMembers from "../DisplayUserGroupDetailsMembers/DisplayUserGroupDetailsMembers";
+import { withActionFeedback } from "../../../contexts/ActionFeedbackContext";
+import { Trans, withTranslation } from "react-i18next";
+import LinkSVG from "../../../../img/svg/link.svg";
+import { withClipboard } from "../../../contexts/Clipboard/ManagedClipboardServiceProvider";
+
+/**
+ * This component displays the details of a users group
+ */
+class DisplayUserGroupDetails extends React.Component {
+  /**
+   * Constructor
+   * @param {Object} props
+   */
+  constructor(props) {
+    super(props);
+    this.bindCallbacks();
+  }
+
+  /**
+   * Bind callbacks methods
+   */
+  bindCallbacks() {
+    this.handlePermalinkClick = this.handlePermalinkClick.bind(this);
+    this.handleCloseClick = this.handleCloseClick.bind(this);
+  }
+
+  /**
+   * Returns the current user
+   */
+  get group() {
+    return this.props.userWorkspaceContext.details.group;
+  }
+
+  /**
+   * Returns the base url
+   */
+  get baseUrl() {
+    return this.props.context.userSettings.getTrustedDomain();
+  }
+
+  /**
+   * Handle when the user copies the permalink.
+   */
+  async handlePermalinkClick() {
+    const baseUrl = this.props.context.userSettings.getTrustedDomain();
+    const permalink = `${baseUrl}/app/groups/view/${this.group.id}`;
+    await this.props.clipboardContext.copy(permalink, this.translate("The permalink has been copied to clipboard."));
+  }
+
+  /**
+   * Handle close sidebar click
+   */
+  handleCloseClick() {
+    this.props.userWorkspaceContext.onDetailsLocked();
+  }
+
+  /**
+   * Get the translate function
+   * @returns {function(...[*]=)}
+   */
+  get translate() {
+    return this.props.t;
+  }
+
+  /**
+   * Render the component
+   * @returns {JSX}
+   */
+  render() {
+    return (
+      <div className="sidebar group">
+        <div className="sidebar-header">
+          <div className="teaser-image">
+            <GroupAvatar group={this.group} />
+          </div>
+          <div className="title-area">
+            <h3>
+              <div className="title-wrapper">
+                <span className="name sidebar-header-title">{this.group.name}</span>
+              </div>
+              <span className="subtitle">
+                <Trans>Group</Trans>
+              </span>
+            </h3>
+            <button
+              type="button"
+              className="title-link link no-border"
+              title={this.translate("Copy the link to this group")}
+              onClick={this.handlePermalinkClick}
+            >
+              <LinkSVG />
+              <span className="visuallyhidden">
+                <Trans>Copy the link to this group</Trans>
+              </span>
+            </button>
+          </div>
+        </div>
+        <div className="sidebar-content">
+          <DisplayUserGroupDetailsInformation />
+          <DisplayUserGroupDetailsMembers />
+        </div>
+      </div>
+    );
+  }
+}
+
+DisplayUserGroupDetails.propTypes = {
+  context: PropTypes.any, // The application context
+  actionFeedbackContext: PropTypes.any, // The action feedback context,
+  userWorkspaceContext: PropTypes.any, // The user workspace context
+  clipboardContext: PropTypes.object, // the clipboard service
+  t: PropTypes.func, // The translation function
+};
+
+export default withAppContext(
+  withActionFeedback(withUserWorkspace(withClipboard(withTranslation("common")(DisplayUserGroupDetails)))),
+);

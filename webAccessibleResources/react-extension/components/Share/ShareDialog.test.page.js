@@ -1,0 +1,353 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.11.0
+ */
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import React from "react";
+import ShareDialog from "./ShareDialog";
+import AppContext from "../../../shared/context/AppContext/AppContext";
+import MockTranslationProvider from "../../test/mock/components/Internationalisation/MockTranslationProvider";
+import userEvent from "@testing-library/user-event";
+
+/**
+ * The ShareDialog component represented as a page
+ */
+export default class ShareDialogPage {
+  /**
+   * Default constructor
+   * @param appContext An app context
+   * @param props Props to attach
+   */
+  constructor(appContext, props) {
+    this._page = render(
+      <MockTranslationProvider>
+        <AppContext.Provider value={appContext}>
+          <ShareDialog {...props} listMinSize={20} />
+        </AppContext.Provider>
+      </MockTranslationProvider>,
+    );
+
+    this.user = userEvent.setup();
+  }
+
+  /**
+   * Returns the clickable area of the header
+   */
+  get title() {
+    return this._page.container.querySelector(".dialog-header-title").textContent;
+  }
+
+  /**
+   * Returns the text of every item listed in the title info tooltip, or null when no tooltip is
+   * rendered
+   * @returns {null|Array<string>}
+   */
+  get titleTooltipItems() {
+    const tooltip = this._page.container.querySelector(".dialog-title-wrapper .tooltip-text");
+    if (!tooltip) {
+      return null;
+    }
+    return Array.from(tooltip.querySelectorAll(".share-details-item")).map((item) => item.textContent);
+  }
+
+  /**
+   * Returns the text of the title info tooltip header, or null when no tooltip is rendered
+   * @returns {null|string}
+   */
+  get titleTooltipHeader() {
+    // `:first-child` matters, the "and more..." line is a class less span as well.
+    const header = this._page.container.querySelector(
+      ".dialog-title-wrapper .tooltip-text .share-details-list > span:not(.share-details-item):first-child",
+    );
+    return header?.textContent ?? null;
+  }
+
+  /**
+   * Returns the dialog subtitle
+   */
+  get subtitle() {
+    return this._page.container.querySelector(".dialog-header-subtitle").textContent;
+  }
+
+  /**
+   * Returns the dialog element
+   */
+  get form() {
+    return this._page.container.querySelector(".share-form");
+  }
+
+  /**
+   * Returns the dialog wrapper element, carrying the mode classes the styles hook onto
+   */
+  get dialogWrapper() {
+    return this._page.container.querySelector(".share-dialog");
+  }
+  /**
+   * Returns the dialog close element
+   */
+  get dialogClose() {
+    return this._page.container.querySelector(".dialog-close");
+  }
+
+  /**
+   * Returns the autocomplete share name input element
+   */
+  get shareNameInput() {
+    return this._page.container.querySelector("#share-name-input");
+  }
+
+  /**
+   * Returns the warning message element
+   */
+  get warningMessage() {
+    return this._page.container.querySelector(".message.warning").textContent;
+  }
+
+  /**
+   * Returns the error message element
+   */
+  get errorMessage() {
+    return this._page.container.querySelector(".error.message").textContent;
+  }
+
+  /**
+   * Returns true when an error message is displayed
+   */
+  get hasErrorMessage() {
+    return Boolean(this._page.container.querySelector(".error.message"));
+  }
+
+  /**
+   * Get user or group autocomplete for the index one
+   * @returns {Element}
+   */
+  userOrGroupAutocomplete(index) {
+    return this._page.container.querySelectorAll(".autocomplete-item .row .main-cell-wrapper .main-cell button")[
+      index - 1
+    ];
+  }
+
+  /**
+   * Returns the number of displayed users and groups
+   */
+  get count() {
+    return this._page.container.querySelectorAll(".permissions .row .aro-name").length;
+  }
+
+  /**
+   * Returns the user first name and last name for the 'index' one
+   * @param index the display of the user
+   */
+  aroName(index) {
+    return this._page.container.querySelectorAll(".permissions .row .aro-name")[index - 1].querySelector(".ellipsis")
+      .textContent;
+  }
+
+  /**
+   * Returns the user email for the 'index' one
+   * @param index the display of the user email
+   */
+  aroDetails(index) {
+    return this._page.container.querySelectorAll(".permissions .row .aro-details")[index - 1].querySelector(".ellipsis")
+      .textContent;
+  }
+
+  /**
+   * Returns the select rights for the 'index' one
+   * @param index the display of the permission
+   */
+  selectRights(index) {
+    return this._page.container
+      .querySelectorAll(".permissions .row")
+      [index - 1].querySelector(".select .selected-value");
+  }
+
+  /**
+   * Returns the select item rights for the 'index' one
+   * @param index the display of the permission
+   */
+  selectFirstItem(index) {
+    return this._page.container.querySelectorAll(".permissions .row")[index - 1].querySelector(".select .option");
+  }
+
+  /**
+   * Returns the select rights option element matching the given label for the 'index' row.
+   * The select excludes its current value from the options, target options by label.
+   * @param index the display of the permission row
+   * @param label the option label, e.g. "can read", "is owner"
+   */
+  selectRightsItemByLabel(index, label) {
+    const options = this._page.container
+      .querySelectorAll(".permissions .row")
+      [index - 1].querySelectorAll(".select .option");
+    return Array.from(options).find((option) => option.textContent === label);
+  }
+
+  /**
+   * Returns the change status chip for the 'index' row
+   * @param index the display of the permission row
+   */
+  changeChip(index) {
+    return this._page.container.querySelectorAll(".permissions .row")[index - 1].querySelector(".chips");
+  }
+
+  /**
+   * Returns the varies info icon for the 'index' row (present while the permission varies)
+   * @param index the display of the permission row
+   */
+  variesIcon(index) {
+    return this._page.container.querySelectorAll(".permissions .row")[index - 1].querySelector(".varies-icon");
+  }
+
+  /**
+   * Returns the close button to remove user for the 'index' one
+   * @param index the display close button to remove user
+   */
+  removeAro(index) {
+    return this._page.container.querySelectorAll(".permissions .row")[index - 1].querySelector(".remove-item");
+  }
+
+  /**
+   * Returns the revert button for the 'index' row
+   * @param index the display of the permission row
+   */
+  revertAro(index) {
+    return this._page.container.querySelectorAll(".permissions .row")[index - 1].querySelector(".revert-item");
+  }
+
+  /**
+   * Returns the aro id of the 'index' row, extracted from the row element id
+   * @param index the display of the permission row
+   */
+  rowId(index) {
+    return this._page.container.querySelectorAll(".permissions .row")[index - 1].id.replace("permission-item-", "");
+  }
+
+  /**
+   * Returns the group member visibility toggle button for the 'index' row
+   * @param index the display of the permission row
+   */
+  groupVisibilityToggle(index) {
+    return this._page.container
+      .querySelectorAll(".permissions .row")
+      [index - 1].querySelector(".group-visibility-toggle");
+  }
+
+  /**
+   * Returns the number of group member visibility toggles rendered
+   */
+  get groupToggleCount() {
+    return this._page.container.querySelectorAll(".permissions .group-visibility-toggle").length;
+  }
+
+  /**
+   * Returns the number of displayed group member rows
+   */
+  get groupMemberCount() {
+    return this._page.container.querySelectorAll(".permissions .row.group-user-item").length;
+  }
+
+  /**
+   * Returns the group member row for the 'index' one
+   * @param index the display of the group member row
+   */
+  groupMember(index) {
+    return this._page.container.querySelectorAll(".permissions .row.group-user-item")[index - 1];
+  }
+
+  /** Toggle the group member visibility for the 'index' row */
+  async toggleGroupMemberVisibility(index) {
+    await this.click(this.groupVisibilityToggle(index));
+  }
+
+  /**
+   * Returns the save button element
+   */
+  get saveButton() {
+    return this._page.container.querySelector('.submit-wrapper button[type=\"submit\"]');
+  }
+
+  /**
+   * Returns the cancel button element
+   */
+  get cancelButton() {
+    return this._page.container.querySelector(".submit-wrapper .cancel");
+  }
+
+  /**
+   * Returns true if the page object exists in the container
+   */
+  exists() {
+    return this.form !== null;
+  }
+
+  /** Click on the element */
+  async click(element) {
+    await this.user.click(element);
+  }
+
+  /** Click without wait for on the element */
+  escapeKey() {
+    // Escape key down event
+    const escapeKeyDown = { keyCode: 27 };
+    fireEvent.keyDown(this.form, escapeKeyDown);
+  }
+
+  /** fill the input element with data */
+  async fillInput(element, data) {
+    const dataInputEvent = { target: { value: data } };
+    fireEvent.change(element, dataInputEvent);
+    await waitFor(() => {});
+  }
+
+  /** fill the search autocomplete input element with data */
+  async searchName(data) {
+    await this.fillInput(this.shareNameInput, data);
+  }
+
+  /** Select a user or a group in autocmplete for the index one */
+  async selectUserOrGroup(index) {
+    await this.click(this.userOrGroupAutocomplete(index));
+  }
+
+  /** Select is owner rights */
+  async selectFirstItemRights(index) {
+    await this.click(this.selectRights(index));
+    await this.click(this.selectFirstItem(index));
+  }
+
+  /** Select the rights option with the given label for the index row */
+  async selectRightsOption(index, label) {
+    await this.click(this.selectRights(index));
+    await this.click(this.selectRightsItemByLabel(index, label));
+  }
+
+  /** Save permissions */
+  async savePermissions() {
+    await this.click(this.saveButton);
+  }
+
+  /** Save permissions without wait */
+  async savePermissionsWithoutWait() {
+    await this.click(this.saveButton);
+  }
+
+  /**remove permission*/
+  async selectRemovePermission(index) {
+    await this.click(this.removeAro(index));
+  }
+
+  /**revert a permission pending deletion*/
+  async selectRevertPermission(index) {
+    await this.click(this.revertAro(index));
+  }
+}

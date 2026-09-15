@@ -1,0 +1,155 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since        3.0.3
+ */
+import { use, changeLanguage } from "i18next";
+import { initReactI18next } from "react-i18next";
+import { Component } from "react";
+import PropTypes from "prop-types";
+import deTranslations from "../../../../../locales/de-DE/common.json";
+import enTranslations from "../../../../../locales/en-UK/common.json";
+import esTranslations from "../../../../../locales/es-ES/common.json";
+import frTranslations from "../../../../../locales/fr-FR/common.json";
+import itTranslations from "../../../../../locales/it-IT/common.json";
+import jaTranslations from "../../../../../locales/ja-JP/common.json";
+import koTranslations from "../../../../../locales/ko-KR/common.json";
+import ltTranslations from "../../../../../locales/lt-LT/common.json";
+import nlTranslations from "../../../../../locales/nl-NL/common.json";
+import plTranslations from "../../../../../locales/pl-PL/common.json";
+import ptBrTranslations from "../../../../../locales/pt-BR/common.json";
+import roTranslations from "../../../../../locales/ro-RO/common.json";
+import ruTranslations from "../../../../../locales/ru-RU/common.json";
+import slTranslations from "../../../../../locales/sl-SI/common.json";
+import svTranslations from "../../../../../locales/sv-SE/common.json";
+import ukTranslations from "../../../../../locales/uk-UA/common.json";
+import csTranslations from "../../../../../locales/cs-CZ/common.json";
+
+/**
+ * This component set up the translation process
+ */
+class MockTranslationProvider extends Component {
+  /**
+   *
+   * @returns {Promise<void>}
+   * @constructor
+   */
+  constructor(props) {
+    super();
+    use(initReactI18next)
+      // init i18next, for all options read: https://www.i18next.com/overview/configuration-options
+      .init({
+        // As en-UK is not supported for the english locale we need to use en-GB
+        lng: props.language || "en-GB",
+        resources: {
+          "de-DE": {
+            common: deTranslations,
+          },
+          "en-GB": {
+            common: enTranslations,
+          },
+          "es-ES": {
+            common: esTranslations,
+          },
+          "fr-FR": {
+            common: frTranslations,
+          },
+          "it-IT": {
+            common: itTranslations,
+          },
+          "ja-JP": {
+            common: jaTranslations,
+          },
+          "ko-KR": {
+            common: koTranslations,
+          },
+          "lt-LT": {
+            common: ltTranslations,
+          },
+          "nl-NL": {
+            common: nlTranslations,
+          },
+          "pl-PL": {
+            common: plTranslations,
+          },
+          "pt-BR": {
+            common: ptBrTranslations,
+          },
+          "ro-RO": {
+            common: roTranslations,
+          },
+          "ru-RU": {
+            common: ruTranslations,
+          },
+          "sl-SI": {
+            common: slTranslations,
+          },
+          "sv-SE": {
+            common: svTranslations,
+          },
+          "uk-UA": {
+            common: ukTranslations,
+          },
+          "cs-CZ": {
+            common: csTranslations,
+          },
+        },
+        react: {
+          useSuspense: false,
+        },
+        fallbackLng: false,
+        ns: ["common"],
+        defaultNS: "common",
+        keySeparator: false, // don't use the dot for separator of nested json object
+        nsSeparator: false, // allowed ':' in key to avoid namespace separator
+        debug: false,
+      });
+  }
+
+  /**
+   * Applies a language change whenever it's needed.
+   * This method is use isntead of the others to provide the new locale before an updates occur.
+   * This way the translation used and displayed is the right one.
+   *
+   * @param {*} nextProps
+   * @returns
+   */
+  async shouldComponentUpdate(nextProps) {
+    await this.handleChangeLanguage(nextProps.language);
+    return nextProps.language !== this.props.language;
+  }
+
+  /**
+   * Whenever the translation language change
+   * @param nextLanguage The previous language
+   * @returns {Promise<void>}
+   */
+  async handleChangeLanguage(nextLanguage) {
+    if (nextLanguage !== this.props.language) {
+      await changeLanguage(nextLanguage);
+    }
+  }
+
+  /**
+   * Render the component.
+   * @returns {JSX}
+   */
+  render() {
+    return { ...this.props.children };
+  }
+}
+
+MockTranslationProvider.propTypes = {
+  children: PropTypes.any, // The children components,
+  language: PropTypes.string, // The current translation language
+};
+
+export default MockTranslationProvider;

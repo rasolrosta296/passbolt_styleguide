@@ -1,0 +1,121 @@
+/*
+	Tooltips
+	That allows HTML in them
+*/
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  border-bottom: 0;
+
+  // Tooltip focus
+  &:focus, :focus-visible {
+    outline: 0;
+  }
+
+  /* Tooltip text */
+  .tooltip-text {
+    position: absolute;
+    z-index: 99;
+    visibility: hidden;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out,
+    visibility 0.2s ease-in-out,
+    transform 0.2s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+    transform: translate3d(0, 0, 0);
+    max-width: 24rem;
+    width: max-content;
+    padding: .4rem 1.6rem;
+    background: var(--Tool-tip-Tool-tip-background);
+    color: var(--Tool-tip-Tool-tip-text);
+    border-radius: var(--Menu-radius);
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+    font-weight: normal;
+    text-align: left;
+
+    a {
+      font-size: 1.2rem;
+    }
+
+    &::after {
+      content: " ";
+      position: absolute;
+      border: .5rem solid transparent;
+    }
+
+    /* only right for now */
+    &.top {
+      bottom: 100%;
+      left: 50%;
+      margin: 0 0 1rem 0;
+      &::after {
+        left: 50%;
+        top: 100%;
+        border-top-color: var(--Tool-tip-Tool-tip-background);
+      }
+    }
+    &.top-left {
+      right: 0;
+      bottom: 100%;
+      margin: 0 0 1rem 0;
+      &::after {
+        left: calc(100% - 1.5rem);
+        top: 100%;
+        border-top-color: var(--Tool-tip-Tool-tip-background);
+      }
+    }
+    &.right {
+      bottom: 50%;
+      left: 100%;
+      margin: 0 0 0 1rem;
+      &::after {
+        bottom: 50%;
+        right: 100%;
+        border-right-color: var(--Tool-tip-Tool-tip-background);
+      }
+    }
+    &.bottom {
+      top: 100%;
+      right: 50%;
+      margin: 1rem 0 0 0;
+      &::after {
+        right: 50%;
+        bottom: 100%;
+        border-bottom-color: var(--Tool-tip-Tool-tip-background);
+      }
+    }
+    &.left {
+      top: 50%;
+      right: 100%;
+      margin: 0 1rem 0 0;
+      &::after {
+        top: 50%;
+        left: 100%;
+        border-left-color: var(--Tool-tip-Tool-tip-background);
+      }
+    }
+  }
+
+  /* Ease the tooltip left when you mouse over the tooltip container */
+  &:hover .tooltip-text, &:focus .tooltip-text {
+    visibility: visible;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+    opacity: 1;
+
+    &.top, &.top:after {
+      transform: translate(-50%);
+    }
+    &.right, &.right:after {
+      transform: translate(0, 50%);
+    }
+    &.bottom, &.bottom:after {
+      transform: translate(50%);
+    }
+    &.left, &.left:after {
+      transform: translate(0, -50%);
+    }
+  }
+}

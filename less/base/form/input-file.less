@@ -1,0 +1,46 @@
+input[type=file] {
+  display: none;
+}
+
+.input.file {
+  .input-file-inline {
+    ._field-border();
+    display: flex;
+    align-items: center;
+    padding: .3rem;
+    border: none;
+    background: var(--Field-Field-background);
+    border-radius: var(--Button-border-radius);
+    box-sizing: border-box;
+    margin-bottom: 1.2rem;
+
+    input[type=text] {
+      flex: 1;
+      padding: .1rem 1rem .1rem .7rem; // the left passing is reduced to visually match 10px with the parent padding
+      margin: 0;
+      box-shadow: none;
+
+      &:disabled {
+        box-shadow: none;
+        opacity: 1;
+      }
+    }
+
+    button, .button {
+      padding: .4rem 1.6rem;
+    }
+  }
+
+  &.disabled {
+    opacity: .5;
+    cursor: default;
+
+    input[type=text], button, .button {
+      cursor: default;
+    }
+
+    .input-file-inline {
+      ._field-border-disabled();
+    }
+  }
+}

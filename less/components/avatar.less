@@ -1,0 +1,72 @@
+@avatar-size: 4.2rem;
+
+.avatar {
+    display: flex;
+    position: relative;
+
+    &-with-name {
+      display: flex;
+      align-items: center;
+
+      .details {
+        display: flex;
+        flex-direction: column;
+        padding: 0 .8rem 0 1.6rem;
+
+        .name,
+        .email {
+          word-wrap: break-word;
+          display: inline-block;
+          .ellipsis();
+        }
+        .name {
+          font-size: 2rem;
+          font-style: normal;
+          font-weight: 600;
+          line-height: normal;
+          color: var(--Text-and-icons-Main-text);
+        }
+        .email {
+          color: var(--Text-and-icons-Main-text);
+          font-size: 1.3rem;
+          font-style: normal;
+          font-weight: 400;
+          opacity: 0.5;
+          line-height: normal;
+        }
+      }
+    }
+
+    svg.attention-required {
+        position: absolute;
+        width: 2rem;
+        height: 2rem;
+        top: -0.1rem;
+        left: 3.7rem;
+        --icon-exclamation-color: var(--Alert-Alert-icon);
+        --icon-exclamation-background-color: var(--Alert-Alert-background);
+        --icon-exclamation-border-color: var(--Alert-Alert-background);
+    }
+
+    img, svg {
+      width: 5.6rem;
+      height: 5.6rem;
+      border-radius: 50%;
+    }
+
+    .default-avatar {
+      display: flex;
+      border-radius: 50%;
+
+      .is-loading {
+        display: none;
+      }
+    }
+
+    &.big {
+      img, svg{
+        width: 6.4rem;
+        height: 6.4rem;
+      }
+    }
+}

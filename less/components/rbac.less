@@ -1,0 +1,115 @@
+.rbac-settings {
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .flex-container.outer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .inner {
+    display: flex;
+    align-self: stretch;
+    min-width: fit-content;
+    border-top: .1rem solid var(--Workspace-Dividers);
+
+    &.highlighted {
+      background: var(--Grid-Grid-selected-row);
+    }
+
+    &:hover {
+      .flex-item {
+        background: var(--Grid-Grid-hover-row);
+      }
+    }
+
+    &.header-flex {
+      background: var(--Grid-Grid-background);
+
+      .flex-item {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+        &.first {
+          justify-content: flex-start;
+        }
+      }
+
+      .dropdown {
+        & > button {
+          height: 2.4rem;
+          width: 2.4rem;
+          padding: .4rem;
+        }
+
+        .dropdown-content.menu-action-contextual {
+          border: 1px solid var(--Action-button-Action-button-border);
+        }
+      }
+    }
+  }
+
+  .flex-item {
+    box-sizing: border-box;
+    min-width: 22rem;
+    width: 20%;
+    max-width: 40rem;
+    align-self: stretch;
+    min-height: 4.4rem;
+    padding: .6rem .8rem;
+    align-content: center;
+
+    &:not(:first-of-type)>label {
+      text-align: center;
+    }
+
+    &.first {
+      min-width: 30rem;
+      width: 25%;
+      max-width: 50rem;
+      padding: .6rem 1.6rem;
+    }
+    &.full-width{
+      width: 100%;
+    }
+
+    .select-container {
+      display: block;
+
+      .select .select-items {
+        width: inherit;
+      }
+    }
+
+    .warning-message {
+      text-align: center;
+    }
+  }
+
+  .inner.level-2 .flex-item {
+    &.first {
+      padding-left: 3.2rem;
+    }
+  }
+
+  .inner.level-3 .flex-item {
+    &.first {
+      padding-left: 4.8rem;
+    }
+  }
+
+  form {
+    overflow: auto;
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--Workspace-Elevator) transparent;
+  }
+}

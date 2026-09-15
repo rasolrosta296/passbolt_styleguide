@@ -1,0 +1,27 @@
+// @depends on accordion.less
+.error-details {
+  width: 100%;
+
+  .accordion-header {
+    a {
+      border:0;
+    }
+
+    svg {
+      &.caret-right, &.caret-down {
+        width: inherit;
+        height: inherit;
+      }
+
+      &.caret-right {
+        margin-right: .2rem;
+      }
+    }
+  }
+  .accordion-content textarea {
+    margin-top: .8rem;
+    font-size: 1rem;
+    height: 12rem;
+    font-family: monospace;
+  }
+}

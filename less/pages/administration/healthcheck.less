@@ -1,0 +1,87 @@
+.page.administration .app .panel.main .panel.middle .main-page .healthcheck-settings {
+  .main-content {
+    align-items: stretch;
+  }
+
+  .healthcheck-environment-section,
+  .healthcheck-configFiles-section,
+  .healthcheck-core-section,
+  .healthcheck-ssl-section,
+  .healthcheck-database-section,
+  .healthcheck-gpg-section,
+  .healthcheck-app-section,
+  .healthcheck-smtp-section,
+  .healthcheck-directorySync-section,
+  .healthcheck-sso-section,
+  .healthcheck-metadata-section {
+    .healthcheck-success,
+    .healthcheck-warning,
+    .healthcheck-fail,
+    .healthcheck-info {
+      display: flex;
+      align-items: center;
+      margin: 1rem 0;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: var(--Section-border-radius);
+
+      .tooltip {
+        margin: .3rem 0 0 -.5rem;
+      }
+    }
+    .healthcheck-success {
+      background: var(--Healthcheck-Healthcheck-Success);
+    }
+    .healthcheck-warning {
+      background: var(--Healthcheck-Healthcheck-Warning);
+    }
+    .healthcheck-fail {
+      background: var(--Healthcheck-Healthcheck-Error);
+    }
+    .healthcheck-info {
+      background: var(--Healthcheck-Healthcheck-Ignored);
+    }
+  }
+
+  .svg-icon {
+    width: 1.8rem;
+    min-width: 1.8rem;
+    height: 1.8rem;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.healthcheck-color-legends {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+
+  & > * {
+    display: flex;
+    align-items: center;
+    gap: 1.6rem;
+    padding: 1rem 1.6rem;
+    border-radius: .5rem;
+  }
+
+  .healthcheck-success {
+    background: var(--Healthcheck-Healthcheck-Success);
+  }
+  .healthcheck-warning {
+    background: var(--Healthcheck-Healthcheck-Warning);
+  }
+  .healthcheck-fail {
+    background: var(--Healthcheck-Healthcheck-Error);
+  }
+  .healthcheck-info {
+    background: var(--Healthcheck-Healthcheck-Ignored);
+  }
+
+  svg {
+    min-width: 1.8rem;
+    min-height: 1.8rem;
+    max-width: 1.8rem;
+    max-height: 1.8rem;
+  }
+}

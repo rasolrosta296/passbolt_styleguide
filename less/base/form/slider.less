@@ -1,0 +1,76 @@
+
+.slider {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: .2rem;
+    border-radius: 5px;
+    background: var(--Loading-bar-Loading-bar-background);
+    outline: 0;
+    flex-grow: 1;
+
+    &:focus-visible {
+      outline: @outline-default-border;
+    }
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 1.6rem;
+      height: 1.6rem;
+      box-shadow: inset 0 0 0 .1rem var(--Primary-button-Primary-button-background);
+      border-radius: 50%;
+      background:  var(--Primary-button-Primary-button-background);
+      cursor: pointer;
+
+      &:hover {
+        box-shadow: inset .1rem .1rem 0 var(--States-Hover-Highlight),
+        .1rem .1rem 0 var(--States-Hover-Shadow),
+        inset 0 0 0 .1rem var(--Primary-button-Primary-button-background);
+      }
+
+      &:active {
+        box-shadow: inset -.1rem -.1rem 0 var(--States-Active-Highlight),
+        inset .1rem .1rem 0 var(--States-Active-Shadow),
+        inset 0 0 0 .1rem var(--Primary-button-Primary-button-background);
+      }
+    }
+
+    &::-moz-range-thumb {
+      width: 1.6rem;
+      height: 1.6rem;
+      box-shadow: inset 0 0 0 .1rem var(--Primary-button-Primary-button-background);
+      border: none;
+      border-radius: 50%;
+      background: var(--Primary-button-Primary-button-background);
+      cursor: pointer;
+
+      &:hover {
+        box-shadow: inset .1rem .1rem 0 var(--States-Hover-Highlight),
+        .1rem .1rem 0 var(--States-Hover-Shadow),
+        inset 0 0 0 .1rem var(--Primary-button-Primary-button-background);
+      }
+
+      &:active {
+        box-shadow: inset -.1rem -.1rem 0 var(--States-Active-Highlight),
+        inset .1rem .1rem 0 var(--States-Active-Shadow),
+        inset 0 0 0 .1rem var(--Primary-button-Primary-button-background);
+      }
+    }
+
+    &::-moz-range-progress {
+      background: var(--Primary-button-Primary-button-background);
+    }
+  }
+
+  input[type=number] {
+    margin-left: 1.6rem;
+  }
+}
+
+
+

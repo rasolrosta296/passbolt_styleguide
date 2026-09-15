@@ -1,0 +1,208 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.13.0
+ */
+import React from "react";
+import PropTypes from "prop-types";
+import UserAvatar from "../../Common/Avatar/UserAvatar";
+import GroupAvatar from "../../Common/Avatar/GroupAvatar";
+import SpinnerSVG from "../../../../img/svg/spinner.svg";
+import { withAppContext } from "../../../../shared/context/AppContext/AppContext";
+import { withResourceWorkspace } from "../../../contexts/ResourceWorkspaceContext";
+import { Trans, withTranslation } from "react-i18next";
+import CaretDownSVG from "../../../../img/svg/caret_down.svg";
+import CaretRightSVG from "../../../../img/svg/caret_right.svg";
+import DisplayAroName from "../../../../shared/components/Aro/DisplayAroName";
+
+class DisplayResourceFolderDetailsPermissions extends React.Component {
+  /**
+   * Constructor
+   * @param {Object} props
+   */
+  constructor(props) {
+    super(props);
+    this.state = this.getDefaultState();
+    this.bindCallbacks();
+  }
+
+  /**
+   * Get default state
+   * @returns {*}
+   */
+  getDefaultState() {
+    return {
+      permissions: null,
+      open: false,
+      loading: true,
+    };
+  }
+
+  /**
+   * Bind callbacks methods
+   */
+  bindCallbacks() {
+    this.handleTitleClickEvent = this.handleTitleClickEvent.bind(this);
+  }
+
+  /**
+   * Whenever the component has updated in terms of props
+   * @param prevProps
+   */
+  async componentDidUpdate(prevProps) {
+    await this.handleFolderChange(prevProps.resourceWorkspaceContext.details.folder);
+  }
+
+  /**
+   * Check if the folder has changed and fetch
+   * @param previousFolder
+   */
+  handleFolderChange(previousFolder) {
+    const hasFolderChanged = this.folder.id !== previousFolder.id;
+    if (hasFolderChanged && this.state.open) {
+      this.fetch();
+    }
+  }
+
+  /**
+   * Get the folder permissions.
+   */
+  async fetch() {
+    this.setState({ loading: true });
+    const permissions = await this.props.context.port.request(
+      "passbolt.permissions.find-aco-permissions-for-display",
+      this.folder.id,
+      "Folder",
+    );
+    this.setState({ permissions, loading: false });
+  }
+
+  /**
+   * handle when the users click on the section header.
+   * Open/Close it.
+   */
+  handleTitleClickEvent() {
+    const open = !this.state.open;
+    if (open) {
+      this.fetch();
+    }
+    this.setState({ open });
+  }
+
+  /**
+   * Returns the current detailed resource
+   */
+  get folder() {
+    return this.props.resourceWorkspaceContext.details.folder;
+  }
+
+  /**
+   * Get a permission aro name
+   * @param {object} permission The permission
+   */
+  getPermissionLabel(permission) {
+    switch (permission.type) {
+      case 1:
+        return this.translate("can read");
+      case 7:
+        return this.translate("can update");
+      case 15:
+        return this.translate("is owner");
+    }
+  }
+
+  /**
+   * check if no permission is present
+   * @returns {boolean}
+   */
+  isLoading() {
+    return this.state.loading;
+  }
+
+  /**
+   * Get the translate function
+   * @returns {function(...[*]=)}
+   */
+  get translate() {
+    return this.props.t;
+  }
+
+  /**
+   * Render the component
+   * @returns {JSX}
+   */
+  render() {
+    return (
+      <div className={`sharedwith accordion detailed-permission sidebar-section ${this.state.open ? "" : "closed"}`}>
+        <div className="accordion-header">
+          <h4>
+            <button className="link no-border" type="button" onClick={this.handleTitleClickEvent}>
+              <span className="accordion-title">
+                <Trans>Shared with</Trans>
+              </span>
+              {this.state.open ? <CaretDownSVG /> : <CaretRightSVG />}
+            </button>
+          </h4>
+        </div>
+        {this.state.open && (
+          <div className="accordion-content">
+            <div>
+              <ul className="shared-with ready">
+                {this.isLoading() && (
+                  <div className="processing-wrapper">
+                    <SpinnerSVG />
+                    <span className="processing-text">
+                      <Trans>Retrieving permissions</Trans>
+                    </span>
+                  </div>
+                )}
+                {this.state.permissions &&
+                  this.state.permissions.map((permission) => (
+                    <li key={permission.id} className="usercard-col-2">
+                      {permission.aro === "User" && (
+                        <UserAvatar
+                          user={permission.user}
+                          baseUrl={this.props.context.userSettings.getTrustedDomain()}
+                        />
+                      )}
+                      {permission.aro === "Group" && <GroupAvatar group={permission.group} />}
+                      <div className="content-wrapper">
+                        <div className="content">
+                          <div className="name">
+                            <DisplayAroName
+                              displayAs={permission.aro}
+                              user={permission.user}
+                              group={permission.group}
+                            />
+                          </div>
+                          <div className="subinfo">{this.getPermissionLabel(permission)}</div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
+DisplayResourceFolderDetailsPermissions.propTypes = {
+  context: PropTypes.any, // The application context
+  resourceWorkspaceContext: PropTypes.object,
+  t: PropTypes.func, // The translation function
+};
+
+export default withAppContext(
+  withResourceWorkspace(withTranslation("common")(DisplayResourceFolderDetailsPermissions)),
+);

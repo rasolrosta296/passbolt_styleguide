@@ -1,0 +1,56 @@
+#migrate-metadata-settings {
+    .feedback-card {
+        border: none;
+        gap: 1.6rem;
+
+        .migration-status-information ul {
+            display: table;
+            gap: .8rem;
+            font-size: 1.5rem;
+            line-height: 2.043rem;
+            border-collapse: separate;
+            border-spacing: 1.6rem .8rem;
+
+            .label {
+                color: var(--Text-and-icons-Secondary-text);
+            }
+
+            li {
+                display: table-row;
+                span {
+                    display: table-cell;
+                }
+            }
+        }
+    }
+
+    .togglelist {
+        label {
+            font-weight: normal;
+
+            .info {
+                color: var(--Text-and-icons-Secondary-text);
+                margin-left: .6rem;
+                font-size: inherit;
+            }
+
+            & > * {
+                display: inline;
+            }
+        }
+    }
+
+    .radiolist-alt {
+        .name {
+            font-weight: bold;
+        }
+    }
+
+    .warning-message {
+        margin-bottom: 0;
+    }
+
+    .description {
+        margin-bottom: 3.2rem;
+    }
+}

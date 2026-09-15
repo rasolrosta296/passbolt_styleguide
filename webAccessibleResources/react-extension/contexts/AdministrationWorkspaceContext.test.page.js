@@ -1,0 +1,290 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.11.0
+ */
+import { render } from "@testing-library/react";
+import React, { act } from "react";
+import AdministrationWorkspaceContextProvider, {
+  AdministrationWorkspaceContext,
+} from "./AdministrationWorkspaceContext";
+import AppContext from "../../shared/context/AppContext/AppContext";
+import { Router, NavLink, Route, Switch } from "react-router-dom";
+import { createMemoryHistory } from "history";
+import userEvent from "@testing-library/user-event";
+
+/**
+ * The AdministrationWorkspaceContextPage component represented as a page
+ */
+export default class AdministrationWorkspaceContextPage {
+  /**
+   * Default constructor
+   * @param appContext An app context
+   * @param props Props to attach
+   */
+  constructor(appContext, props) {
+    this.context = appContext;
+    this.props = props;
+    this.setup(appContext, props);
+    this.user = userEvent.setup();
+  }
+
+  /**
+   * Returns the contextual selected administration
+   */
+  get selectedAdministration() {
+    return this.administrationWorkspaceContext.selectedAdministration;
+  }
+
+  /**
+   * Returns the contextual is save enabled
+   */
+  get isSaveEnabled() {
+    return this.administrationWorkspaceContext.can.save;
+  }
+
+  /**
+   * Returns the must save settings
+   */
+  get mustSaveSettings() {
+    return this.administrationWorkspaceContext.must.save;
+  }
+
+  /**
+   * Returns the is test enabled
+   */
+  get isTestEnabled() {
+    return this.administrationWorkspaceContext.can.test;
+  }
+
+  /**
+   * Returns the must test settings
+   */
+  get mustTestSettings() {
+    return this.administrationWorkspaceContext.must.test;
+  }
+
+  /**
+   * Returns the is synchronize enabled
+   */
+  get isSynchronizeEnabled() {
+    return this.administrationWorkspaceContext.can.synchronize;
+  }
+
+  /**
+   * Returns the must synchronize settings
+   */
+  get mustSynchronizeSettings() {
+    return this.administrationWorkspaceContext.must.synchronize;
+  }
+
+  /**
+   * Returns the must edit subscription key
+   */
+  get mustEditSubscriptionKey() {
+    return this.administrationWorkspaceContext.must.editSubscriptionKey;
+  }
+
+  /**
+   * Returns the must refresh subscription key
+   */
+  get mustRefreshSubscriptionKey() {
+    return this.administrationWorkspaceContext.must.refreshSubscriptionKey;
+  }
+
+  /**
+   * Go to the given link identified by CSS selector and click on it
+   * @returns {Promise<void>}
+   * @ linkCssSelector The CSS link selector
+   */
+  async goToLink(linkCssSelector) {
+    const element = this._page.container.querySelector(linkCssSelector);
+    await this.user.click(element);
+  }
+
+  /**
+   * Go to the mfa route
+   */
+  async goToMfa() {
+    this.setup(this.context, this.props);
+    await this.goToLink(".mfa");
+  }
+
+  /**
+   * Go to the mfa route
+   */
+  async goToMfaPolicy() {
+    this.setup(this.context, this.props);
+    await this.goToLink(".mfa-policy");
+  }
+
+  /**
+   * Returns the Password Policy menu
+   */
+  async goToPasswordPolicySettings() {
+    this.setup(this.context, this.props);
+    await this.goToLink(".password-policies");
+  }
+
+  /**
+   * Returns the Password Policy menu
+   */
+  async goToUserPassphraseSettings() {
+    this.setup(this.context, this.props);
+    await this.goToLink(".user-passphrase-policies");
+  }
+
+  /**
+   * Returns the Password Policy menu
+   */
+  async goToAccountRecoverySettings() {
+    this.setup(this.context, this.props);
+    await this.goToLink(".account-recovery");
+  }
+
+  /**
+   * Returns the Password Policy menu
+   */
+  async goToSsoSettings() {
+    this.setup(this.context, this.props);
+    await this.goToLink(".sso");
+  }
+
+  /**
+   * Go to the users directory route
+   */
+  async goToUsersDirectory() {
+    await this.goToLink(".users-directory");
+  }
+
+  /**
+   * Go to the email notifications route
+   */
+  async goToEmailNotifications() {
+    await this.goToLink(".email-notifications");
+  }
+
+  /**
+   * Go to the subscription route
+   */
+  async goToSubscription() {
+    await this.goToLink(".subscription");
+  }
+
+  /**
+   * Go to the healthcheck route
+   */
+  async goToHealthcheck() {
+    await this.goToLink(".healthcheck");
+  }
+
+  /**
+   * Go to the downgrade to Community Edition route
+   */
+  async goToCeDowngrade() {
+    await this.goToLink(".ce-downgrade");
+  }
+
+  /**
+   * on save enabled
+   */
+  onSaveEnabled() {
+    act(() => this.administrationWorkspaceContext.onSaveEnabled());
+  }
+
+  /**
+   * on must save settings
+   */
+  onMustSaveSettings() {
+    act(() => this.administrationWorkspaceContext.onMustSaveSettings());
+  }
+
+  /**
+   * on must edit subscription key
+   */
+  onMustEditSubscriptionKey() {
+    act(() => this.administrationWorkspaceContext.onMustEditSubscriptionKey());
+  }
+
+  /**
+   * on must refresh subscription key
+   */
+  onMustRefreshSubscriptionKey() {
+    act(() => this.administrationWorkspaceContext.onMustRefreshSubscriptionKey());
+  }
+
+  /**
+   * on reset actions settings
+   */
+  onResetActionsSettings() {
+    this.administrationWorkspaceContext.onResetActionsSettings();
+  }
+
+  /**
+   * Returns the rendering of  the page
+   * @param appContext a app context
+   * @param text a specific text search filter
+   * @param tag a specific tag search filter
+   */
+  setup(appContext, props) {
+    this._page = render(
+      <AppContext.Provider value={appContext}>
+        <Router history={createMemoryHistory({ initialEntries: ["/app/administration"] })}>
+          <Switch>
+            <Route path={["/app/administration"]}>
+              <AdministrationWorkspaceContextProvider {...props}>
+                <AdministrationWorkspaceContext.Consumer>
+                  {(AdministrationWorkspaceContext) => {
+                    this.administrationWorkspaceContext = AdministrationWorkspaceContext;
+                    return <></>;
+                  }}
+                </AdministrationWorkspaceContext.Consumer>
+              </AdministrationWorkspaceContextProvider>
+            </Route>
+          </Switch>
+          <NavLink to={{ pathname: "/app/administration/mfa" }}>
+            <a className="mfa"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/mfa-policy" }}>
+            <a className="mfa-policy"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/password-policies" }}>
+            <a className="password-policies"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/user-passphrase-policies" }}>
+            <a className="user-passphrase-policies"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/sso" }}>
+            <a className="sso"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/account-recovery" }}>
+            <a className="account-recovery"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/users-directory" }}>
+            <a className="users-directory"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/email-notification" }}>
+            <a className="email-notifications"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/subscription" }}>
+            <a className="subscription"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/healthcheck" }}>
+            <a className="healthcheck"></a>
+          </NavLink>
+          <NavLink to={{ pathname: "/app/administration/ce-downgrade" }}>
+            <a className="ce-downgrade"></a>
+          </NavLink>
+        </Router>
+      </AppContext.Provider>,
+    );
+  }
+}

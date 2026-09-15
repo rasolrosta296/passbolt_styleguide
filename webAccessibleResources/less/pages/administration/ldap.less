@@ -1,0 +1,111 @@
+.ldap-settings.main-column {
+  label {
+    margin: 1.6rem 0;
+  }
+
+  input {
+    max-width: 100%;
+  }
+  .singleline {
+    max-width: 100%;
+  }
+
+  .connection_info input {
+    margin-bottom: 0;
+  }
+
+  div.openldap {
+    .radio.input {
+      margin-right: 1.6rem;
+    }
+
+    input {
+      margin-bottom: 0;
+    }
+  }
+
+  .accordion {
+    width: 100%;
+
+    h4.accordion-header button {
+      font-weight: 700;
+      font-size: 1.8rem;
+
+      svg {
+        &.caret-right, &.caret-down {
+          width: inherit;
+          height: inherit;
+        }
+
+        &.caret-right {
+          margin-right: .2rem;
+        }
+      }
+
+    }
+  }
+}
+
+.dialog {
+  .ldap-test-settings-report {
+    .directory-list-content {
+      height: 22rem;
+      padding: .8rem;
+      overflow: auto;
+      border: 1px solid var(--Field-Field-border);
+      border-radius: var(--Button-border-radius);
+      background: var(--Field-Field-background);
+    }
+    .directory-list {
+      margin-bottom: 1.6rem;
+      span.error {
+        color: var(--Field-Error);
+      }
+      td:first-child {
+        padding-right: 3.2rem;
+      }
+    }
+
+    p.directory-errors.error {
+      color: var(--Field-Error);
+    }
+
+    .accordion-directory-structure {
+      .error {
+        color: var(--Field-Error);
+      }
+    }
+
+    .accordion-directory-errors textarea {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+      overflow: auto;
+      height: 22rem;
+    }
+  }
+
+  .directory-structure {
+    overflow: auto;
+    height: 22rem;
+  }
+}
+
+// Increase directory sync report dialog size
+.ldap-simulate-synchronize-dialog.dialog-wrapper {
+  .dialog {
+    max-width: 70rem;
+  }
+
+  textarea.full_report {
+    max-height: 25rem;
+  }
+
+  button.link {
+    margin-top: 0.5rem;
+  }
+
+  a.button + button.primary {
+    margin-left: auto;
+  }
+
+}

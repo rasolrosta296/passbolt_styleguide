@@ -1,0 +1,227 @@
+.input.toggle-switch {
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+
+  .toggle-switch-checkbox {
+    flex: 0 0 3.2rem;
+    -webkit-appearance: none;
+    appearance: none;
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    width: 3.2rem;
+    height: 1.6rem;
+    background: var(--Toggle-Toggle-off-background);
+    border-radius: 3.2rem;
+    box-sizing: border-box;
+    margin: 0;
+
+    & + label {
+      margin: 0 0 0 1.2rem;
+      color: var(--Text-and-icons-Main-text);
+      font-size: 1.5rem;
+      line-height: normal;
+      display: inline-block;
+      cursor: pointer;
+      padding: 0;
+      .ellipsis();
+
+      &.text {
+        font-weight: 400;
+      }
+
+      .name {
+        margin: 0;
+        display:block;
+        font-size: 1.6rem;
+      }
+
+      .info {
+        margin: 0;
+        font-weight: normal;
+        font-size: 1.3rem;
+        display:block;
+        white-space: pre-wrap;
+
+        span {
+          font-weight: bold;
+        }
+      }
+
+      .error-message, .warning-message {
+        font-size: 1.3rem;
+      }
+    }
+
+    // Toggle hover
+    &:hover, &:hover:before {
+      box-shadow: inset .1rem .1rem 0 0 var(--States-Hover-Highlight), inset -.1rem -.1rem 0 0 var(--States-Hover-Shadow);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 .4rem var(--States-Focus), inset 0 0 0 .1rem var(--States-Focus);
+      background-color: var(--States-Focus);
+      text-decoration: none;
+      border: none;
+    }
+
+    // Toggle pressed
+    &:active {
+      box-shadow: inset -.1rem -.1rem 0 0 var(--States-Active-Highlight), inset .1rem .1rem 0 0 var(--States-Active-Shadow), inset 0 0 0 1px var(--Action-button-Action-button-border);
+    }
+
+    // Toggle dot pressed
+    &:active:before {
+      box-shadow: inset -.1rem -.1rem 0 0 var(--States-Active-Highlight), inset .1rem .1rem 0 0 var(--States-Active-Shadow), inset 0 0 0 1px var(--Action-button-Action-button-border);
+      margin: 0 0 0 0.7rem;
+      padding: 0 0 0 0.3rem;
+    }
+
+    // Toggle checked
+    &:checked {
+      background: var(--Toggle-Toggle-on-background);
+      &:focus-visible {
+        box-shadow: 0 0 .4rem var(--States-Focus), inset 0 0 0 .1rem var(--States-Focus);
+        background-color: var(--States-Focus);
+        text-decoration: none;
+        border: none;
+        outline: none;
+      }
+    }
+
+    // Toggle dot checked
+    &:checked:before {
+      transform: translateX(65%);
+    }
+
+    // Toggle dot checked and pressed
+    &:checked:active:before {
+      margin: 0 0.7rem 0 0;
+      padding: 0 0.3rem 0 0;
+    }
+
+    // Disabled state label.
+    &:disabled + label {
+      opacity: .5;
+      cursor: auto;
+    }
+
+    // Disabled toggle.
+    &:disabled {
+      cursor: auto;
+      opacity: .5;
+      border: none;
+      box-shadow: none;
+      outline: 0;
+
+      &:before{
+        box-shadow: none;
+      }
+    }
+
+    // Toggle dot
+    &:before {
+      content: "";
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 1rem;
+      background: var(--Toggle-Toggle-knob);
+      transform: translateX(-65%);
+      // Dot animation
+      transition: all .4s ease, padding .3s ease, margin .3s ease;
+    }
+  }
+}
+
+.togglelist-alt {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+
+  .toggle-input {
+    width: 4.2rem
+  }
+
+  .input.has-error.toggle-switch {
+    margin-bottom: 1.2rem;
+  }
+  .input.toggle-switch {
+    ._field-borders(var(--Action-button-Action-button-border));
+    border-radius: var(--Button-border-radius);
+    background-color: var(--Workspace-Panels-background);
+    margin: 0;
+    position: relative;
+
+    &:hover:not(:disabled), &:active:not(:disabled) {
+      background: var(--Workspace-Dividers-lighter);
+    }
+
+    &.checked {
+      box-shadow:
+                inset -.1rem -.1rem 0 0 var(--States-Active-Highlight),
+              inset .1rem .1rem 0 0 var(--States-Active-Shadow);
+      background: var(--Action-button-Active-action-button-background);
+
+      input[type="checkbox"]:hover, input[type="checkbox"]:active {
+        box-shadow: none;
+      }
+    }
+
+    input[type="checkbox"]:hover, input[type="checkbox"]:active {
+      box-shadow: none;
+    }
+
+    .toggle-switch-checkbox {
+      position: absolute;
+      left: 1.6rem;
+    }
+
+    label {
+      margin: 0;
+      padding: 1.6rem 1.6rem 1.6rem 6.4rem;
+      width: 100%;
+
+      .name {
+        margin: 0;
+        display:block;
+        font-size: 1.6rem;
+      }
+      .info-input {
+        display: flex;
+        margin: 0;
+        font-weight: normal;
+        font-size: 1.3rem;
+
+        input {
+          margin-left: 4px;
+          margin-right: 4px;
+        }
+
+        span, input{
+          margin-top: auto;
+          margin-bottom: auto;
+        }
+      }
+
+      .info {
+        margin: 0;
+        font-weight: normal;
+        font-size: 1.3rem;
+        display:block;
+        white-space: pre-wrap;
+
+        span {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .input {
+    .error-message {
+      margin-bottom: 0;
+      margin-top: 0.5rem;
+      margin-left: 4.1rem;
+    }
+  }
+}

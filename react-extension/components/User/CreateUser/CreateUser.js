@@ -1,0 +1,541 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.13.0
+ */
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { withAppContext } from "../../../../shared/context/AppContext/AppContext";
+import DialogWrapper from "../../Common/Dialog/DialogWrapper/DialogWrapper";
+import NotifyError from "../../Common/Error/NotifyError/NotifyError";
+import FormSubmitButton from "../../Common/Inputs/FormSubmitButton/FormSubmitButton";
+import FormCancelButton from "../../Common/Inputs/FormSubmitButton/FormCancelButton";
+import { withActionFeedback } from "../../../contexts/ActionFeedbackContext";
+import { withDialog } from "../../../contexts/DialogContext";
+import { Trans, withTranslation } from "react-i18next";
+import { maxSizeValidation } from "../../../lib/Error/InputValidator";
+import { USER_INPUT_MAX_LENGTH } from "../../../../shared/constants/inputs.const";
+import AppEmailValidatorService from "../../../../shared/services/validator/AppEmailValidatorService";
+import AttentionSVG from "../../../../img/svg/attention.svg";
+import Select from "../../Common/Select/Select";
+import { capitalizeFirstLetter } from "../../../../shared/utils/stringUtils";
+import { withRoles } from "../../../contexts/RoleContext";
+import RolesCollection from "../../../../shared/models/entity/role/rolesCollection";
+import RoleEntity from "../../../../shared/models/entity/role/roleEntity";
+
+class CreateUser extends Component {
+  /**
+   * Constructor
+   * @param {Object} props
+   */
+  constructor(props) {
+    super(props);
+    this.state = this.defaultState;
+    this.createInputRefs();
+    this.bindEventHandlers();
+  }
+
+  /**
+   * ComponentDidMount
+   * Invoked immediately after component is inserted into the tree
+   * @return {void}
+   */
+  componentDidMount() {
+    this.props.roleContext.refreshRoles();
+    this.setState({ loading: false }, () => {
+      this.firstNameRef.current.focus();
+    });
+  }
+
+  /**
+   * ComponentDidUpdate
+   * Invoked immediately after state or props changed
+   * @return {void}
+   */
+  componentDidUpdate() {
+    // Set the role id if not in case of the lazy loading of roles
+    if (this.state.role_id == null && this.props.roles?.items.length > 0) {
+      this.setState({ role_id: this.props.roles.getFirst("name", RoleEntity.ROLE_USER)?.id });
+    }
+  }
+
+  /**
+   * Get default state
+   * @returns {*}
+   */
+  get defaultState() {
+    return {
+      // Dialog states
+      loading: true,
+      processing: false,
+
+      // Fields and errors
+      first_name: "",
+      first_nameError: null,
+      first_nameWarning: "",
+      last_name: "",
+      last_nameError: null,
+      last_nameWarning: "",
+      username: "",
+      usernameError: null,
+      usernameWarning: "",
+      role_id: this.props.roles?.getFirst("name", RoleEntity.ROLE_USER)?.id, // Get the user role id
+      hasAlreadyBeenValidated: false, // True if the form has already been submitted once
+    };
+  }
+
+  /**
+   * Create references
+   * @returns {void}
+   */
+  createInputRefs() {
+    this.firstNameRef = React.createRef();
+    this.lastNameRef = React.createRef();
+    this.usernameRef = React.createRef();
+  }
+
+  /**
+   * Bind event handlers
+   * @returns {void}
+   */
+  bindEventHandlers() {
+    this.handleClose = this.handleClose.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleFormSubmit = this.handleFormSubmit.bind(this);
+    this.handleFirstNameInputKeyUp = this.handleFirstNameInputKeyUp.bind(this);
+    this.handleLastNameInputOnKeyUp = this.handleLastNameInputOnKeyUp.bind(this);
+    this.handleUsernameInputOnKeyUp = this.handleUsernameInputOnKeyUp.bind(this);
+    this.handleCheckboxClick = this.handleCheckboxClick.bind(this);
+  }
+
+  /**
+   * Handle close button click.
+   * @returns {void}
+   */
+  handleClose() {
+    this.props.onClose();
+  }
+
+  /**
+   * Handle form input changes.
+   * @params {ReactEvent} The react event
+   * @returns {void}
+   */
+  handleInputChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+    this.setState({ [name]: value });
+  }
+
+  /**
+   * Handle form checkbox input changes.
+   * @params {ReactEvent} The react event
+   * @returns {void}
+   */
+  handleCheckboxClick(event) {
+    const target = event.target;
+    const checked = target.checked;
+    const name = target.name;
+    this.setState({ [name]: checked });
+  }
+
+  /**
+   * Handle first name input keyUp event.
+   */
+  handleFirstNameInputKeyUp() {
+    if (this.state.hasAlreadyBeenValidated) {
+      const state = this.validateFirstNameInput();
+      this.setState(state);
+    } else {
+      const first_nameWarning = maxSizeValidation(this.state.first_name, USER_INPUT_MAX_LENGTH, this.translate);
+      this.setState({ first_nameWarning });
+    }
+  }
+
+  /**
+   * Handle last name input keyUp event.
+   */
+  handleLastNameInputOnKeyUp() {
+    if (this.state.hasAlreadyBeenValidated) {
+      const state = this.validateLastNameInput();
+      this.setState(state);
+    } else {
+      const last_nameWarning = maxSizeValidation(this.state.last_name, USER_INPUT_MAX_LENGTH, this.translate);
+      this.setState({ last_nameWarning });
+    }
+  }
+
+  /**
+   * Handle username/email input keyUp event.
+   */
+  handleUsernameInputOnKeyUp() {
+    if (this.state.hasAlreadyBeenValidated) {
+      const state = this.validateUsernameInput();
+      this.setState(state);
+    } else {
+      const usernameWarning = maxSizeValidation(this.state.username, USER_INPUT_MAX_LENGTH, this.translate);
+      this.setState({ usernameWarning });
+    }
+  }
+
+  /**
+   * Handle form submit event.
+   * @params {ReactEvent} The react event
+   * @returns {void}
+   */
+  async handleFormSubmit(event) {
+    // Avoid the form to be submitted.
+    event.preventDefault();
+
+    this.setState({ hasAlreadyBeenValidated: true, processing: true });
+
+    // Do not re-submit an already processing form
+    if (!this.state.processing) {
+      const errors = this.validate();
+
+      if (this.hasValidationError(errors)) {
+        this.setState({ processing: false });
+        this.focusFirstFieldError(errors);
+        return;
+      }
+      try {
+        await this.createUser();
+        await this.handleSaveSuccess();
+      } catch (error) {
+        this.handleSaveError(error);
+      }
+    }
+  }
+
+  /**
+   * Handle save operation success.
+   */
+  async handleSaveSuccess() {
+    await this.props.actionFeedbackContext.displaySuccess(this.translate("The user has been added successfully"));
+    this.props.onClose();
+  }
+
+  /**
+   * Handle save operation error.
+   * @param {object} error The returned error
+   */
+  handleSaveError(error) {
+    // It can happen when the user has closed the passphrase entry dialog by instance.
+    if (error.name === "UserAbortsOperationError") {
+      this.setState({ processing: false });
+    } else if (this.hasUsernameAlreadyExists(error.data)) {
+      this.setState({ processing: false, usernameError: error.data.body.username.uniqueUsername });
+    } else {
+      // Unexpected error occurred.
+      console.error(error);
+      this.handleError(error);
+      this.setState({ processing: false });
+    }
+  }
+
+  /**
+   * has username already exists
+   * @param errorData the error data received
+   * @returns {*}
+   */
+  hasUsernameAlreadyExists(errorData) {
+    return errorData && errorData.body && errorData.body.username && errorData.body.username.uniqueUsername;
+  }
+
+  /**
+   * handle error to display the error dialog
+   * @param error
+   */
+  handleError(error) {
+    const errorDialogProps = {
+      error: error,
+    };
+    this.props.dialogContext.open(NotifyError, errorDialogProps);
+  }
+
+  /**
+   * Focus the first field of the form which is in error state.
+   * @param {object} errors
+   * @returns {void}
+   */
+  focusFirstFieldError(errors) {
+    if (errors.first_nameError) {
+      this.firstNameRef.current.focus();
+    } else if (errors.last_nameError) {
+      this.lastNameRef.current.focus();
+    } else if (errors.username) {
+      this.usernameRef.current.focus();
+    }
+  }
+
+  /**
+   * Create the user
+   * @returns {Promise<Object>} User entity or Error
+   */
+  async createUser() {
+    const userDto = {
+      profile: {
+        first_name: this.state.first_name,
+        last_name: this.state.last_name,
+      },
+      username: this.state.username.trim(),
+      role_id: this.state.role_id,
+    };
+    return await this.props.context.port.request("passbolt.users.create", userDto);
+  }
+
+  /**
+   * Validate the form.
+   * @returns {object} errors
+   */
+  validate() {
+    // Validate the form inputs.
+    const first_nameError = this.validateFirstNameInput();
+    const last_nameError = this.validateLastNameInput();
+    const usernameError = this.validateUsernameInput();
+    const errors = { first_nameError, last_nameError, usernameError };
+    this.setState(errors);
+    return errors;
+  }
+
+  /**
+   * Validate the first name input.
+   * @returns {string | null}
+   */
+  validateFirstNameInput() {
+    let first_nameError = null;
+    const first_name = this.state.first_name.trim();
+    if (!first_name.length) {
+      first_nameError = this.translate("A first name is required.");
+    }
+    return first_nameError;
+  }
+
+  /**
+   * Validate the last name input.
+   * @returns {string | null}
+   */
+  validateLastNameInput() {
+    let last_nameError = null;
+    const last_name = this.state.last_name.trim();
+    if (!last_name.length) {
+      last_nameError = this.translate("A last name is required.");
+    }
+    return last_nameError;
+  }
+
+  /**
+   * Validate the username input.
+   * @returns {string | null}
+   */
+  validateUsernameInput() {
+    let usernameError = null;
+    const username = this.state.username.trim();
+    if (!username.length) {
+      usernameError = this.translate("A username is required.");
+    } else if (!AppEmailValidatorService.validate(username, this.props.context.siteSettings)) {
+      usernameError = this.translate("The username should be a valid username address.");
+    }
+    return usernameError;
+  }
+
+  /**
+   * Return true if the form has some validation error
+   * @param {object} errors
+   * @returns {boolean}
+   */
+  hasValidationError(errors) {
+    return errors.first_nameError !== null || errors.last_nameError !== null || errors.usernameError !== null;
+  }
+
+  /**
+   * Should input be disabled? True if state is loading or processing
+   * @returns {boolean}
+   */
+  hasAllInputDisabled() {
+    return this.state.processing || this.state.loading || !this.props.roles;
+  }
+
+  /**
+   * Get the role list
+   * @return {*[]}
+   */
+  get rolesList() {
+    if (this.props.roles) {
+      return this.props.roles.items.map((role) =>
+        role.isAReservedRole()
+          ? { value: role.id, label: capitalizeFirstLetter(this.translate(role.name)) }
+          : { value: role.id, label: role.name },
+      );
+    }
+    return [];
+  }
+
+  /**
+   * Get the translate function
+   * @returns {function(...[*]=)}
+   */
+  get translate() {
+    return this.props.t;
+  }
+
+  /**
+   * Render
+   * @returns {JSX}
+   */
+  render() {
+    return (
+      <DialogWrapper
+        className="user-create-dialog"
+        title={this.translate("Add User")}
+        onClose={this.handleClose}
+        disabled={this.hasAllInputDisabled()}
+      >
+        <form className="user-create-form" onSubmit={this.handleFormSubmit} noValidate>
+          <div className="form-content">
+            <div
+              className={`input text required ${this.state.first_nameError ? "error" : ""} ${this.hasAllInputDisabled() ? "disabled" : ""}`}
+            >
+              <label htmlFor="user-first-name-input">
+                <Trans>First name</Trans>
+                {this.state.first_nameWarning && <AttentionSVG className="attention-required" />}
+              </label>
+              <input
+                id="user-first-name-input"
+                name="first_name"
+                ref={this.firstNameRef}
+                type="text"
+                value={this.state.first_name}
+                placeholder={this.translate("First name")}
+                required="required"
+                disabled={this.hasAllInputDisabled()}
+                maxLength="128"
+                onKeyUp={this.handleFirstNameInputKeyUp}
+                onChange={this.handleInputChange}
+                autoComplete="off"
+                autoFocus={true}
+              />
+              {this.state.first_nameError && (
+                <div className="first_name error-message">{this.state.first_nameError}</div>
+              )}
+              {this.state.first_nameWarning && (
+                <div className="firstname warning-message">
+                  <strong>
+                    <Trans>Warning:</Trans>
+                  </strong>{" "}
+                  {this.state.first_nameWarning}
+                </div>
+              )}
+            </div>
+            <div
+              className={`input text required ${this.state.last_nameError ? "error" : ""} ${this.hasAllInputDisabled() ? "disabled" : ""}`}
+            >
+              <label htmlFor="user-last-name-input">
+                <Trans>Last name</Trans>
+                {this.state.last_nameWarning && <AttentionSVG className="attention-required" />}
+              </label>
+              <input
+                id="user-last-name-input"
+                name="last_name"
+                ref={this.lastNameRef}
+                maxLength="128"
+                type="text"
+                value={this.state.last_name}
+                placeholder={this.translate("Last name")}
+                required="required"
+                disabled={this.hasAllInputDisabled()}
+                onKeyUp={this.handleLastNameInputOnKeyUp}
+                onChange={this.handleInputChange}
+                autoComplete="off"
+                autoFocus={true}
+              />
+              {this.state.last_nameError && <div className="last_name error-message">{this.state.last_nameError}</div>}
+              {this.state.last_nameWarning && (
+                <div className="lastname warning-message">
+                  <strong>
+                    <Trans>Warning:</Trans>
+                  </strong>{" "}
+                  {this.state.last_nameWarning}
+                </div>
+              )}
+            </div>
+            <div
+              className={`input text required ${this.state.usernameError ? "error" : ""} ${this.hasAllInputDisabled() ? "disabled" : ""}`}
+            >
+              <label htmlFor="user-username-input">
+                <Trans>Username / Email</Trans>
+                {this.state.usernameWarning && <AttentionSVG className="attention-required" />}
+              </label>
+              <input
+                id="user-username-input"
+                name="username"
+                maxLength="128"
+                ref={this.usernameRef}
+                type="text"
+                value={this.state.username}
+                placeholder={this.translate("Email")}
+                required="required"
+                disabled={this.hasAllInputDisabled()}
+                onKeyUp={this.handleUsernameInputOnKeyUp}
+                onChange={this.handleInputChange}
+                autoComplete="off"
+                autoFocus={true}
+              />
+              {this.state.usernameError && <div className="username error-message">{this.state.usernameError}</div>}
+              {this.state.usernameWarning && (
+                <div className="username warning-message">
+                  <strong>
+                    <Trans>Warning:</Trans>
+                  </strong>{" "}
+                  {this.state.usernameWarning}
+                </div>
+              )}
+            </div>
+            <div className={`input select-wrapper ${this.hasAllInputDisabled() ? "disabled" : ""}`}>
+              <label htmlFor="select_role">
+                <Trans>Role</Trans>
+              </label>
+              <Select
+                id="select_role"
+                disabled={this.isLoggedInUserAsEditing || this.hasAllInputDisabled()}
+                name="role_id"
+                items={this.rolesList}
+                value={this.state.role_id}
+                onChange={this.handleInputChange}
+              />
+            </div>
+          </div>
+          <div className="submit-wrapper clearfix">
+            <FormCancelButton disabled={this.hasAllInputDisabled()} onClick={this.handleClose} />
+            <FormSubmitButton
+              disabled={this.hasAllInputDisabled()}
+              processing={this.state.processing}
+              value={this.translate("Save")}
+            />
+          </div>
+        </form>
+      </DialogWrapper>
+    );
+  }
+}
+
+CreateUser.propTypes = {
+  context: PropTypes.any, // The application context
+  actionFeedbackContext: PropTypes.any, // The action feedback context
+  roleContext: PropTypes.any, // The roles context
+  roles: PropTypes.instanceOf(RolesCollection), // The roles collection
+  onClose: PropTypes.func,
+  dialogContext: PropTypes.any, // The dialog context
+  t: PropTypes.func, // The translation function
+};
+
+export default withAppContext(withActionFeedback(withRoles(withDialog(withTranslation("common")(CreateUser)))));

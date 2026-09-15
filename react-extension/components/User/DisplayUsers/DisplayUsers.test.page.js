@@ -1,0 +1,219 @@
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         2.11.0
+ */
+
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import React from "react";
+import AppContext from "../../../../shared/context/AppContext/AppContext";
+import { BrowserRouter as Router } from "react-router-dom";
+import DisplayUsers from "./DisplayUsers";
+import MockTranslationProvider from "../../../test/mock/components/Internationalisation/MockTranslationProvider";
+import { UserWorkspaceContext } from "../../../contexts/UserWorkspaceContext";
+import userEvent from "@testing-library/user-event";
+
+/**
+ * The FilterUsersByGroups component represented as a page
+ */
+export default class DisplayUsersPage {
+  /**
+   * Default constructor
+   * @param appContext An app context
+   * @param props Props to attach
+   */
+  constructor(props) {
+    this._page = render(
+      <MockTranslationProvider>
+        <AppContext.Provider value={props.context}>
+          <UserWorkspaceContext.Provider value={props.userWorkspaceContext}>
+            <Router>
+              <DisplayUsers {...props} />
+            </Router>
+          </UserWorkspaceContext.Provider>
+        </AppContext.Provider>
+      </MockTranslationProvider>,
+    );
+    this.userEvent = userEvent.setup();
+  }
+
+  /**
+   * Returns true if the content is empty
+   */
+  get hasEmptyContent() {
+    return Boolean(this._page.container.querySelector(".empty-content"));
+  }
+
+  /**
+   * Returns true if the content is empty
+   */
+  get hasEmptyContentWithTextSearch() {
+    return Boolean(this._page.container.querySelector(".empty-content .try-another-search"));
+  }
+
+  /**
+   * Returns true if the content is empty
+   */
+  get hasEmptyContentWithFilterApplied() {
+    return Boolean(this._page.container.querySelector(".empty-content .try-another-filter"));
+  }
+
+  /**
+   * Returns the number of displayed users
+   */
+  get usersCount() {
+    return this._page.container.querySelectorAll("table tbody tr").length;
+  }
+
+  /**
+   * Returns the number of column
+   * @return {number}
+   */
+  get columnCount() {
+    return this._page.container.querySelectorAll("table thead th").length;
+  }
+
+  /**
+   * Get the column at the index specified in paramenter
+   * @param {number} index The index of the column
+   * @return {{readonly name: string|*}|string|*}
+   */
+  column(index) {
+    const element = this._page.container.querySelectorAll("table thead th")[index - 1];
+    return {
+      get name() {
+        return element.querySelector(".cell-header .cell-header-text").textContent;
+      },
+    };
+  }
+
+  /**
+   * Returns the index-th user with useful accessors
+   * @index The user index
+   */
+  async user(index) {
+    await waitFor(() => {
+      const rows = this._page.container.querySelectorAll("table tbody tr");
+      if (rows.length < index) {
+        throw new Error(`Waiting for user at index ${index}`);
+      }
+    });
+    const element = this._page.container.querySelectorAll("table tbody tr")[index - 1];
+    const userEventInstance = this.userEvent;
+    return {
+      get username() {
+        return element.querySelector(".cell-username div").textContent;
+      },
+      get attentionRequired() {
+        return Boolean(element.querySelector(".attention-required"));
+      },
+      async select() {
+        await userEventInstance.click(element);
+      },
+      async rightClick() {
+        const rect = element.getBoundingClientRect();
+        fireEvent.contextMenu(element, {
+          button: 2,
+          pageX: rect.left + rect.width / 2,
+          pageY: rect.top + rect.height / 2,
+          preventDefault: () => {},
+        });
+        await waitFor(() => {});
+      },
+      async dragStart() {
+        fireEvent.dragStart(element, {
+          dataTransfer: {
+            effectAllowed: "",
+            setDragImage: () => {},
+          },
+        });
+        await waitFor(() => {});
+      },
+      async dragEnd() {
+        fireEvent.dragEnd(element);
+        await waitFor(() => {});
+      },
+      get checkboxElement() {
+        return element.querySelector(".cell-checkbox");
+      },
+      async clickCheckbox() {
+        const checkbox = element.querySelector(".cell-checkbox");
+        if (checkbox) {
+          await userEventInstance.click(checkbox);
+        }
+      },
+    };
+  }
+
+  /**
+   * Sort the users by their full name
+   */
+  async sortByFullname() {
+    const element = this._page.container.querySelectorAll("thead th button")[0];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by their username
+   */
+  async sortByUsername() {
+    const element = this._page.container.querySelectorAll("thead th button")[1];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by role
+   */
+  async sortByRole() {
+    const element = this._page.container.querySelectorAll("thead th button")[2];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by their last date of modification
+   */
+  async sortBySuspended() {
+    const element = this._page.container.querySelectorAll("thead th button")[3];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by their last date of modification
+   */
+  async sortByModified() {
+    const element = this._page.container.querySelectorAll("thead th button")[4];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by their last date of login
+   */
+  async sortByLastLoggedIn() {
+    const element = this._page.container.querySelectorAll("thead th button")[5];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by their mfa enable status
+   */
+  async sortByMFAEnabled() {
+    const element = this._page.container.querySelectorAll("thead th button")[6];
+    fireEvent.click(element);
+  }
+
+  /**
+   * Sort the users by their account recovery status
+   */
+  async sortByAccountRecoveryStatus() {
+    const element = this._page.container.querySelectorAll("thead th button")[7];
+    fireEvent.click(element);
+  }
+}

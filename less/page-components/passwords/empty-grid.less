@@ -1,0 +1,33 @@
+/* Define state where there are no passwords, and the filter all items */
+.tableview.empty {
+    .empty-content {
+        border-top: .1rem solid var(--Workspace-Dividers);
+        display: flex;
+        flex-direction: column;
+        padding: 6.4rem 4.8rem;
+        gap: 1.6rem;
+        width: 100%;
+
+        .message {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: .4rem;
+          padding: 0;
+
+          h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            line-height: normal;
+            margin: 0;
+          }
+
+          p {
+            font-size: 1.6rem;
+            line-height: normal;
+            font-weight: 400;
+            text-align: center;
+          }
+        }
+    }
+}
