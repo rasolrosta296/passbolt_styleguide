@@ -1,11 +1,15 @@
 {
-  "name": "passbolt-styleguide",
-  "version": "5.15.1",
+  "name": "@rasolrosta296/passbolt-styleguide",
+  "version": "5.15.1-keycloak.1",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2023 Passbolt SA",
   "description": "Passbolt styleguide contains common styling assets used by the different sites, plugin, etc.",
   "homepage": "https://www.passbolt.com",
-  "repository": "https://github.com/passbolt/passbolt_styleguide",
+  "repository": "https://github.com/rasolrosta296/passbolt_styleguide",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "engines": {
     "node": ">=22.14.0",
     "npm": ">=10.9.2"
@@ -99,6 +103,7 @@
     "js-yaml": "^4.2.0"
   },
   "scripts": {
+    "prepack": "npm run build",
     "build": "webpack",
     "test": "npm run test:unit",
     "test:unit": "jest --no-cache ./src",
