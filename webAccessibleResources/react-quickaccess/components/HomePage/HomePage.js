@@ -432,7 +432,13 @@ class HomePage extends React.Component {
                 {canUseKeycloakSso && (
                   <li className="filter-entry keycloak-sso-entry">
                     <Link to="/webAccessibleResources/quickaccess/keycloak-sso">
-                      <SsoSVG className="svg-icon sso" width="18" height="18" aria-hidden="true" focusable="false" />
+                      <SsoSVG
+                        className="keycloak-sso-icon"
+                        width="18"
+                        height="18"
+                        aria-hidden="true"
+                        focusable="false"
+                      />
                       <span className="filter-title">
                         <Trans>Keycloak SSO</Trans>
                       </span>
