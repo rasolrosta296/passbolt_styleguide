@@ -107,10 +107,11 @@ describe("HomePage", () => {
       const keycloakSsoEntry = [...page.browserEntries].find((entry) => entry.classList.contains("keycloak-sso-entry"));
 
       expect(keycloakSsoEntry.querySelector(".filter-title").textContent).toBe("Keycloak SSO");
-      const keycloakSsoIcon = keycloakSsoEntry.querySelector(".svg-icon.sso");
+      const keycloakSsoIcon = keycloakSsoEntry.querySelector(".keycloak-sso-icon");
       expect(keycloakSsoIcon.getAttribute("width")).toBe("18");
       expect(keycloakSsoIcon.getAttribute("height")).toBe("18");
       expect(keycloakSsoIcon.getAttribute("aria-hidden")).toBe("true");
+      expect(keycloakSsoIcon.classList.contains("svg-icon")).toBe(false);
       expect(keycloakSsoEntry.querySelector("a").getAttribute("href")).toBe(
         "/webAccessibleResources/quickaccess/keycloak-sso",
       );
