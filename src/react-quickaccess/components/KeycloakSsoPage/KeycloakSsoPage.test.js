@@ -10,6 +10,7 @@ function propsWithStatus(enrolled, detached = true, linked = true) {
   const context = defaultAppContext();
   context.siteSettings.isPluginEnabled = jest.fn((plugin) => plugin === "keycloakSso");
   context.port.addRequestListener("passbolt.keycloak-sso.crypto-enrollment.get-status", () => ({ linked, enrolled }));
+  context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.get-pending", () => ({ items: [] }));
   context.getDetached = jest.fn(() => detached);
   context.setWindowBlurBehaviour = jest.fn();
   return { context };
@@ -271,5 +272,80 @@ describe("Quickaccess::KeycloakSsoPage", () => {
       "Keycloak authentication could not be completed. Try again to start a fresh enrollment.",
     );
     expect(screen.queryByText(/secret-code|secret-state/)).toBeNull();
+  });
+
+  it("shows pending group access without automatically decrypting or changing membership", async () => {
+    const props = propsWithStatus(true);
+    const complete = jest.fn();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.get-pending", () => ({
+      items: [
+        {
+          id: "8d020e76-4951-58d2-b68e-99e2fc1053f8",
+          group_id: "7cd5488d-b1ec-42f6-925d-795620ff2701",
+          user_id: "53a9a0c1-8ce8-4cbc-9b38-04938fea2311",
+        },
+      ],
+    }));
+    props.context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.complete", complete);
+
+    renderPage(props);
+
+    expect(await screen.findByRole("button", { name: "Apply Keycloak group access" })).toBeTruthy();
+    expect(screen.getByText(/grants new members access to passwords already shared with the groups/)).toBeTruthy();
+    expect(complete).not.toHaveBeenCalled();
+  });
+
+  it("applies pending group access only after an explicit manager click", async () => {
+    const props = propsWithStatus(true);
+    const user = userEvent.setup();
+    let queueRequests = 0;
+    props.context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.get-pending", () => {
+      queueRequests++;
+      return queueRequests === 1
+        ? {
+            items: [
+              {
+                id: "8d020e76-4951-58d2-b68e-99e2fc1053f8",
+                group_id: "7cd5488d-b1ec-42f6-925d-795620ff2701",
+                user_id: "53a9a0c1-8ce8-4cbc-9b38-04938fea2311",
+              },
+            ],
+          }
+        : { items: [] };
+    });
+    const complete = jest.fn(() => ({ completed: 1 }));
+    props.context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.complete", complete);
+    renderPage(props);
+
+    await user.click(await screen.findByRole("button", { name: "Apply Keycloak group access" }));
+
+    await waitFor(() => expect(complete).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("Keycloak group access was applied successfully.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Apply Keycloak group access" })).toBeNull();
+  });
+
+  it("renders only a generic group-provisioning failure", async () => {
+    const props = propsWithStatus(true);
+    const user = userEvent.setup();
+    props.context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.get-pending", () => ({
+      items: [
+        {
+          id: "8d020e76-4951-58d2-b68e-99e2fc1053f8",
+          group_id: "7cd5488d-b1ec-42f6-925d-795620ff2701",
+          user_id: "53a9a0c1-8ce8-4cbc-9b38-04938fea2311",
+        },
+      ],
+    }));
+    props.context.port.addRequestListener("passbolt.keycloak-sso.provisioning.groups.complete", () => {
+      throw new Error("secret-resource-id private-key-material");
+    });
+    renderPage(props);
+
+    await user.click(await screen.findByRole("button", { name: "Apply Keycloak group access" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Keycloak group access could not be fully applied. Refresh and try again.",
+    );
+    expect(screen.queryByText(/secret-resource-id|private-key-material/)).toBeNull();
   });
 });
