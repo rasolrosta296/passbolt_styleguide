@@ -18,6 +18,8 @@ class KeycloakSsoPage extends React.Component {
       enrollmentMetadata: null,
       passphrase: "",
       confirmUnlink: false,
+      groupProvisioningAvailable: false,
+      pendingGroupMemberships: 0,
       message: "",
       error: "",
     };
@@ -27,6 +29,7 @@ class KeycloakSsoPage extends React.Component {
     this.handlePassphraseChange = this.handlePassphraseChange.bind(this);
     this.handleCancelEnrollment = this.handleCancelEnrollment.bind(this);
     this.handleConfirmUnlink = this.handleConfirmUnlink.bind(this);
+    this.handleCompleteGroupProvisioning = this.handleCompleteGroupProvisioning.bind(this);
   }
 
   async componentDidMount() {
@@ -36,11 +39,21 @@ class KeycloakSsoPage extends React.Component {
     }
     try {
       const result = await this.getManagementStatus();
+      let pendingGroupMemberships = [];
+      let groupProvisioningAvailable = false;
+      try {
+        pendingGroupMemberships = await this.getPendingGroupMemberships();
+        groupProvisioningAvailable = true;
+      } catch {
+        // Group provisioning is independently optional and disabled by default.
+      }
       this.setState({
         loading: false,
         statusAvailable: true,
         linked: result.linked,
         enrolled: result.linked && result.enrolled,
+        groupProvisioningAvailable,
+        pendingGroupMemberships: pendingGroupMemberships.length,
       });
     } catch {
       this.setState({
@@ -60,6 +73,14 @@ class KeycloakSsoPage extends React.Component {
       throw new Error("The extension returned an invalid Keycloak enrollment status.");
     }
     return result;
+  }
+
+  async getPendingGroupMemberships() {
+    const result = await this.props.context.port.request("passbolt.keycloak-sso.provisioning.groups.get-pending");
+    if (!result || !Array.isArray(result.items)) {
+      throw new Error("The extension returned an invalid Keycloak group-provisioning status.");
+    }
+    return result.items;
   }
 
   async handleStartLink() {
@@ -214,6 +235,27 @@ class KeycloakSsoPage extends React.Component {
     }
   }
 
+  async handleCompleteGroupProvisioning() {
+    this.setState({ processing: true, error: "", message: "" });
+    try {
+      const result = await this.props.context.port.request("passbolt.keycloak-sso.provisioning.groups.complete");
+      if (!result || !Number.isInteger(result.completed) || result.completed < 0) {
+        throw new Error("The extension returned an invalid Keycloak group-provisioning result.");
+      }
+      const pending = await this.getPendingGroupMemberships();
+      this.setState({
+        pendingGroupMemberships: pending.length,
+        message: this.props.t("Keycloak group access was applied successfully."),
+      });
+    } catch {
+      this.setState({
+        error: this.props.t("Keycloak group access could not be fully applied. Refresh and try again."),
+      });
+    } finally {
+      this.setState({ processing: false });
+    }
+  }
+
   render() {
     return (
       <div className="keycloak-sso-page login-form">
@@ -301,6 +343,25 @@ class KeycloakSsoPage extends React.Component {
                   onClick={() => this.setState({ confirmUnlink: false })}
                 >
                   <Trans>Cancel</Trans>
+                </button>
+              </div>
+            )}
+            {this.state.groupProvisioningAvailable && this.state.pendingGroupMemberships > 0 && (
+              <div className="keycloak-group-provisioning">
+                <p>
+                  <Trans>
+                    Keycloak group memberships are waiting for encryption by a group manager. Completing them grants new
+                    members access to passwords already shared with the groups.
+                  </Trans>
+                </p>
+                <button
+                  type="button"
+                  className={`button primary big full-width ${this.state.processing ? "processing" : ""}`}
+                  disabled={this.state.processing}
+                  onClick={this.handleCompleteGroupProvisioning}
+                >
+                  <Trans>Apply Keycloak group access</Trans>
+                  {this.state.processing && <SpinnerSVG />}
                 </button>
               </div>
             )}
