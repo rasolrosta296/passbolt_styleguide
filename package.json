@@ -1,6 +1,6 @@
 {
   "name": "@rasolrosta296/passbolt-styleguide",
-  "version": "5.15.1-keycloak.3",
+  "version": "5.15.1-keycloak.4",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2023 Passbolt SA",
   "description": "Passbolt styleguide contains common styling assets used by the different sites, plugin, etc.",
@@ -78,7 +78,7 @@
     "grapheme-splitter": "^1.0.4",
     "html5-qrcode": "^2.3.8",
     "i18next": "^26.3.4",
-    "i18next-http-backend": "^4.0.0",
+    "i18next-http-backend": "^4.0.2",
     "ip-regex": "^5.0.0",
     "jssha": "^3.2.0",
     "luxon": "^3.4.4",
